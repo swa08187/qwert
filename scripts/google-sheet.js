@@ -29,18 +29,17 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
       return;
     }
 
-    let dataTable = response.getDataTable().toJSON();
-    let jsonData = JSON.parse(dataTable);
-    let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
+    let dataTable = response.getDataTable();
+let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
 
-    musicbook = jsonData.rows.map((row) => {
-      let newRow = {};
-      row.c.forEach((obj, index) => {
-        if (!obj) return;
-        newRow[cols[index]] = "f" in obj ? obj.f : obj.v;
-      });
-      return newRow;
-    });
+musicbook = [];
+for (let i = 0; i < dataTable.getNumberOfRows(); i++) {
+  let rowObj = {};
+  for (let j = 0; j < cols.length; j++) {
+    rowObj[cols[j]] = dataTable.getValue(i, j);
+  }
+  musicbook.push(rowObj);
+}
 
     // 복사본 생성
     addOrdered = JSON.parse(JSON.stringify(musicbook));
