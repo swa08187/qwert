@@ -1,10 +1,10 @@
 var header  = document.querySelector('header');
 var section = document.querySelector('section');
-var genre = document.querySelector('.genre-list');       // 수정
-var category = document.querySelector('.category-list'); // 수정
+var genre = document.querySelector('.genre-list');      
+var category = document.querySelector('.category-list'); 
 var random = document.querySelector('.random');
 
-let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; // 스프레드시트 KEY
+let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; 
 
 let noCover = "https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp";
 
@@ -36,7 +36,7 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 		musicbook = jsonData.rows.map((row) => {
 			let newRow;
 			row.c.forEach((obj, index) => {
-				if (obj == null || obj == undefined) return; //빈값이 경우 정지
+				if (obj == null || obj == undefined) return; 
 				obj[cols[index]] = "f" in obj ? obj["f"] : obj["v"];
 				["f", "v"].forEach((each) => delete obj[each]);
 				newRow = { ...newRow, ...obj };
@@ -70,7 +70,7 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 
 		category_selected = "";
 		genre_selected = "";
-		// sortAdded(); // 이 함수 정의가 없으므로 주석 처리 또는 구현 필요
+		// sortAdded(); 
 	});
 });
 
@@ -299,7 +299,7 @@ function populateSection(jsonObj, direction) {
 			const link = coverImg?.src;
 
 			if (link && !link.includes("namu.wiki")) {
-				window.open(link, "_blank"); // 새 탭으로 열기
+				window.open(link, "_blank"); 
 			} else {
 				alert("이 노래는 링크가 없습니다.");
 			}
