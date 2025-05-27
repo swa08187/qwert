@@ -1,7 +1,7 @@
 var header  = document.querySelector('header');
 var section = document.querySelector('section');
-var genre = document.querySelector('genre');
-var random = document.querySelector('random');
+var genre = document.querySelector('.genre-list');
+var random = document.querySelector('.random-music-list');
 
 let myKey = "1QTqccTGFGoKpCj3xj3ZOUr7K2klsEr_IW9qRs8xkDuQ"; // 스프레드시트 KEY
 var requestURL = `https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json`;
@@ -103,34 +103,28 @@ function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min;
 }
 function random_select(jsonObj, num) {
-
     var musiclist = jsonObj;
 
     /* 기존 노래들 클리어 */
-    const myNode = document.getElementsByClassName("random-music-list");
+    const myNode = document.getElementsByClassName("random-music-list")[0];
     while (myNode.lastElementChild) {
         myNode.removeChild(myNode.lastElementChild);
     }
 
     var dup = [];
-    dup[0] = 0;
     var i = 0;
 
-    for (i; i < num; i = i + 1) {
-
+    for (i; i < num; i++) {
         var rnd = getRndInteger(1, musiclist.length);
 
-        
-        for (var j = 0; j < i; j = j + 1) { 
+        for (var j = 0; j < i; j++) {
             while (dup[j] == rnd) {
                 rnd = rnd + 1;
                 if (rnd == musiclist.length) { rnd = 1; }
                 j = 0;
-                console.log("Random Colide!");
             }
         }
-        dup[i] = rnd; 
-        
+        dup[i] = rnd;
 
         if (musiclist[rnd][0] == "가수") {
             continue;
@@ -146,7 +140,7 @@ function random_select(jsonObj, num) {
         var infoSinger = document.createElement('formatted-string');
 
         myDiv.classList.add("random-song");
-        
+
         coverDiv.classList.add("random-cover-div");
         coverImg.classList.add("random-cover-img");
         coverImg.src = musiclist[rnd][3];
@@ -162,14 +156,12 @@ function random_select(jsonObj, num) {
         infoDiv.appendChild(infoSinger);
         myDiv.appendChild(coverDiv);
         myDiv.appendChild(infoDiv);
-        
-        random.appendChild(myDiv);
-    }
 
+        myNode.appendChild(myDiv);
+    }
 }
 
 function populateSection(jsonObj, direction, cate_sel) {
-
     var musiclist = jsonObj;
 
     /* 기존 노래들 클리어 */
@@ -192,15 +184,15 @@ function populateSection(jsonObj, direction, cate_sel) {
     }
 
     for (i; i != end; i = i + direction) {
-        if ( search_value != "" ) {
-            if ( musiclist[i][0].indexOf(search_value)==-1 && musiclist[i][1].indexOf(search_value)==-1 ) {
-                continue; 
+        if (search_value != "") {
+            if (musiclist[i][0].indexOf(search_value) == -1 && musiclist[i][1].indexOf(search_value) == -1) {
+                continue;
             }
         }
         if (musiclist[i][0] == "가수") {
             continue;
         }
-        if ( (cate_sel != "전체") && (musiclist[i][2] != cate_sel) ) {
+        if ((cate_sel != "전체") && (musiclist[i][2] != cate_sel)) {
             continue;
         }
 
@@ -214,7 +206,7 @@ function populateSection(jsonObj, direction, cate_sel) {
         var infoSinger = document.createElement('formatted-string');
 
         myDiv.classList.add("song-div");
-        
+
         coverDiv.classList.add("album-cover-div");
         coverImg.classList.add("album-cover-img");
         coverImg.src = musiclist[i][3];
@@ -231,7 +223,7 @@ function populateSection(jsonObj, direction, cate_sel) {
         myDiv.appendChild(coverDiv);
         myDiv.appendChild(infoDiv);
 
-        section.appendChild(myDiv);
+        myNode.appendChild(myDiv);
     }
 }
 
