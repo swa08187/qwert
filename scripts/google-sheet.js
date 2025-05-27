@@ -274,6 +274,4 @@ function populateSection(jsonObj, direction) {
   }
 }
 
-		myNode.appendChild(myDiv);
-	}
-}
+		
