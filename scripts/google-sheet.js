@@ -1,12 +1,12 @@
 var header  = document.querySelector('header');
 var section = document.querySelector('section');
-var genre = document.querySelector('genre.genre-list');
-var category = document.querySelector('category');
+var genre = document.querySelector('.genre-list');       // 수정
+var category = document.querySelector('.category-list'); // 수정
 var random = document.querySelector('.random');
 
 let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; // 스프레드시트 KEY
 
-let noCover = https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp;
+let noCover = "https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp";
 
 var musicbook;
 var addOrdered;
@@ -19,7 +19,7 @@ var genre_selected;
 
 google.charts.load("current", { packages: ["corechart"] }).then(() => {
 	let query = new google.visualization.Query(
-		https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json
+		`https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json`
 	);
 
 	query.send((response) => {
@@ -32,7 +32,6 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 
 		let dataTable = response.getDataTable().toJSON(); 
 		let jsonData = JSON.parse(dataTable);
-		// let cols = jsonData.cols.map((col) => col.label); console.log("cols: \n", cols);
 		let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
 		musicbook = jsonData.rows.map((row) => {
 			let newRow;
@@ -55,7 +54,6 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 			return 0;
 		});
 		songOrdered = JSON.parse(JSON.stringify(musicbook));
-		// console.log("Song Ordered\n", songOrdered);
 
 		musicbook.sort((a, b) => {
 			a = a.artist.toLowerCase();
@@ -65,7 +63,6 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 			return 0;
 		});
 		artistOrdered = JSON.parse(JSON.stringify(musicbook));
-		// console.log("artist Ordered\n", artistOrdered);
 
 		category_populate(musicbook);
 		genre_populate(musicbook);
@@ -73,13 +70,12 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 
 		category_selected = "";
 		genre_selected = "";
-		sortAdded();
+		// sortAdded(); // 이 함수 정의가 없으므로 주석 처리 또는 구현 필요
 	});
 });
 
 
 function genre_populate(jsonObj) {
-
 	categories = Array.from(new Set(jsonObj.map(item => item.genre)));
 
 	var cateDiv = document.createElement('div');
@@ -121,10 +117,7 @@ function genre_populate(jsonObj) {
 	}
 }
 
-
-
 function category_populate(jsonObj) {
-
 	categories = Array.from(new Set(jsonObj.map(item => item.category)));
 
 	var cateDiv = document.createElement('div');
@@ -166,17 +159,16 @@ function category_populate(jsonObj) {
 	}
 }
 
-
 function getRndInteger(min, max) {
 	return Math.floor(Math.random() * (max - min) ) + min;
 }
-function random_select(jsonObj, num) {
 
+function random_select(jsonObj, num) {
 	var musiclist = jsonObj;
 
 	/* 기존 노래들 클리어 */
-	const myNode = document.getElementsByClassName("random-music-list");
-	while (myNode.lastElementChild) {
+	const myNode = document.getElementsByClassName("random-music-list")[0];
+	while (myNode && myNode.lastElementChild) {
 		myNode.removeChild(myNode.lastElementChild);
 	}
 
@@ -185,10 +177,8 @@ function random_select(jsonObj, num) {
 	var i = 0;
 
 	for (i; i < num; i = i + 1) {
-
 		var rnd = getRndInteger(1, musiclist.length);
 
-		
 		for (var j = 0; j < i; j = j + 1) { 
 			while (dup[j] == rnd) {
 				rnd = rnd + 1;
@@ -212,7 +202,7 @@ function random_select(jsonObj, num) {
 		
 		coverDiv.classList.add("random-cover-div");
 		coverImg.classList.add("random-cover-img");
-		if (musiclist[rnd].cover_link == null) coverImg.src = noCover;
+		if (!musiclist[rnd].cover_link) coverImg.src = noCover;
 		else coverImg.src = musiclist[rnd].cover_link;
 
 		infoDiv.classList.add("random-info-div");
@@ -239,11 +229,9 @@ function random_select(jsonObj, num) {
 		
 		random.appendChild(myDiv);
 	}
-
 }
 
 function populateSection(jsonObj, direction) {
-
 	var musiclist = jsonObj;
 	console.log("populateSection", musiclist);
 	/* 기존 노래들 클리어 */
@@ -252,7 +240,6 @@ function populateSection(jsonObj, direction) {
 		myNode.removeChild(myNode.lastElementChild);
 	}
 
-	/* 검색 입력창에 들어와있는거 저장 */
 	const search_value = document.getElementById("inputsearch").value;
 
 	var i, end;
@@ -267,8 +254,8 @@ function populateSection(jsonObj, direction) {
 
 	for (i; i != end; i = i + direction) {
 		if ( search_value != "" ) {
-			if (musiclist[i].artist.indexOf(search_value)==-1 && 
-				musiclist[i].song.indexOf(search_value)==-1 ) {
+			if (musiclist[i].artist.indexOf(search_value) == -1 && 
+				musiclist[i].song.indexOf(search_value) == -1 ) {
 				continue; 
 			}
 		}
@@ -292,7 +279,7 @@ function populateSection(jsonObj, direction) {
 		
 		coverDiv.classList.add("album-cover-div");
 		coverImg.classList.add("album-cover-img");
-		if (musiclist[i].cover_link == null) coverImg.src = noCover;
+		if (!musiclist[i].cover_link) coverImg.src = noCover;
 		else coverImg.src = musiclist[i].cover_link;
 
 		infoDiv.classList.add("info-div");
@@ -307,19 +294,17 @@ function populateSection(jsonObj, direction) {
 		myDiv.appendChild(coverDiv);
 		myDiv.appendChild(infoDiv);
 
-	myDiv.addEventListener('click', function () {
-	const coverImg = this.querySelector("img");
-	const link = coverImg?.src;
+		myDiv.addEventListener('click', function () {
+			const coverImg = this.querySelector("img");
+			const link = coverImg?.src;
 
-	
-	if (link && !link.includes("namu.wiki")) {
-		window.open(link, "_blank"); // 새 탭으로 열기
-	} else {
-		alert("이 노래는 링크가 없습니다.");
-	}
-});
+			if (link && !link.includes("namu.wiki")) {
+				window.open(link, "_blank"); // 새 탭으로 열기
+			} else {
+				alert("이 노래는 링크가 없습니다.");
+			}
+		});
 
 		myNode.appendChild(myDiv);
 	}
 }
-
