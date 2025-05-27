@@ -33,7 +33,7 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 		let dataTable = response.getDataTable().toJSON(); 
 		let jsonData = JSON.parse(dataTable);
 		let cols = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-		let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
+	
 		musicbook = jsonData.rows.map((row) => {
     let newRow = {};
     row.c.forEach((obj, index) => {
