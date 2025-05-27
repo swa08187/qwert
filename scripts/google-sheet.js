@@ -70,7 +70,13 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 
 		category_selected = "";
 		genre_selected = "";
-		// sortAdded(); 
+		}
+		   function sortAdded() {
+	addOrdered.sort((a, b) => {
+		return Number(a.order) - Number(b.order);
+	});
+	populateSection(addOrdered, 1);
+}
 	});
 });
 
