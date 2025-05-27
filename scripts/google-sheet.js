@@ -1,7 +1,7 @@
 var header  = document.querySelector('header');
 var section = document.querySelector('section');
-var genre = document.querySelector('.genre-list');      
-var category = document.querySelector('.category-list'); 
+var genre = document.querySelector('.genre.genre-list');
+var category = document.querySelector('.category');
 var random = document.querySelector('.random');
 
 let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; 
