@@ -11,22 +11,19 @@ function searchUpdate() {
 	search_update.setAttribute("value", search_update.value);
 }
 
-function sortSong() {
-  if (typeof songOrdered === 'undefined' || !Array.isArray(songOrdered)) {
-    alert("데이터가 아직 준비되지 않았습니다. 잠시만 기다려주세요.");
-    return;
-  }
-  populateSection(songOrdered, 1);
-}
-
 function sortSinger() {
-  if (typeof artistOrdered === 'undefined' || !Array.isArray(artistOrdered)) {
-    alert("데이터가 아직 준비되지 않았습니다. 잠시만 기다려주세요.");
-    return;
-  }
-  populateSection(artistOrdered, 1);
+	document.getElementById(sort_selected).classList.remove("button-selected");
+	document.getElementById("bySinger").classList.add("button-selected");
+	sort_selected = "bySinger";
+	musicbook = singerOrdered;
+	populateSection(musicbook, 1);
 }
-
+function sortSong() {
+	document.getElementById(sort_selected).classList.remove("button-selected");
+	document.getElementById("bySong").classList.add("button-selected");
+	sort_selected = "bySong";
+	musicbook = songOrdered;
+	populateSection(musicbook, 1);
 }
 function sortAdded() {
 	document.getElementById(sort_selected).classList.remove("button-selected");
