@@ -6,7 +6,7 @@ var random = document.querySelector('.random');
 
 let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; // 스프레드시트 KEY
 
-let noCover = `https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp`;
+let noCover = https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp;
 
 var musicbook;
 var addOrdered;
@@ -19,7 +19,7 @@ var genre_selected;
 
 google.charts.load("current", { packages: ["corechart"] }).then(() => {
 	let query = new google.visualization.Query(
-		`https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json`
+		https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json
 	);
 
 	query.send((response) => {
@@ -32,16 +32,18 @@ google.charts.load("current", { packages: ["corechart"] }).then(() => {
 
 		let dataTable = response.getDataTable().toJSON(); 
 		let jsonData = JSON.parse(dataTable);
-		let cols = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-	
+		// let cols = jsonData.cols.map((col) => col.label); console.log("cols: \n", cols);
+		let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
 		musicbook = jsonData.rows.map((row) => {
-    let newRow = {};
-    row.c.forEach((obj, index) => {
-        if (obj == null || obj == undefined) return; 
-        newRow[cols[index]] = "f" in obj ? obj["f"] : obj["v"];
-    });
-    return newRow;
-});
+			let newRow;
+			row.c.forEach((obj, index) => {
+				if (obj == null || obj == undefined) return; //빈값이 경우 정지
+				obj[cols[index]] = "f" in obj ? obj["f"] : obj["v"];
+				["f", "v"].forEach((each) => delete obj[each]);
+				newRow = { ...newRow, ...obj };
+			});
+			return newRow;
+		});
 
 		addOrdered = JSON.parse(JSON.stringify(musicbook));
 
@@ -241,75 +243,83 @@ function random_select(jsonObj, num) {
 }
 
 function populateSection(jsonObj, direction) {
-    var musiclist = jsonObj;
-    const myNode = document.getElementById("musicList");
-    while (myNode.lastElementChild) {
-        myNode.removeChild(myNode.lastElementChild);
-    }
 
-    const search_value = document.getElementById("inputsearch").value.toLowerCase();
+	var musiclist = jsonObj;
+	console.log("populateSection", musiclist);
+	/* 기존 노래들 클리어 */
+	const myNode = document.getElementById("musicList");
+	while (myNode.lastElementChild) {
+		myNode.removeChild(myNode.lastElementChild);
+	}
 
-    var i, end;
-    if (direction == 1) {
-        i = 0;
-        end = musiclist.length;
-    } else {
-        i = musiclist.length - 1;
-        end = -1;
-    }
+	/* 검색 입력창에 들어와있는거 저장 */
+	const search_value = document.getElementById("inputsearch").value;
 
-    for (; i != end; i = i + direction) {
-        if (search_value !== "") {
-            if (
-                !musiclist[i].artist.toLowerCase().includes(search_value) &&
-                !musiclist[i].song.toLowerCase().includes(search_value)
-            ) {
-                continue;
-            }
-        }
-        if (category_selected !== "" && musiclist[i].category !== category_selected) {
-            continue;
-        }
-        if (genre_selected !== "" && musiclist[i].genre !== genre_selected) {
-            continue;
-        }
+	var i, end;
+	if (direction == 1) {
+		i = 0;
+		end = musiclist.length;
+	}
+	else {
+		i = musiclist.length - 1;
+		end = -1;
+	}
 
-        var myDiv = document.createElement('div');
-        var coverDiv = document.createElement('div');
-        var coverImg = document.createElement('img');
-        var infoDiv = document.createElement('div');
-        var infoSong = document.createElement('formatted-string');
-        var infoArtist = document.createElement('formatted-string');
+	for (i; i != end; i = i + direction) {
+		if ( search_value != "" ) {
+			if (musiclist[i].artist.indexOf(search_value)==-1 && 
+				musiclist[i].song.indexOf(search_value)==-1 ) {
+				continue; 
+			}
+		}
+		if ( (category_selected != "") && (musiclist[i].category != category_selected) ) {
+			continue;
+		}
+		if ( (genre_selected != "") && (musiclist[i].genre != genre_selected) ) {
+			continue;
+		}
 
-        myDiv.classList.add("song-div");
-        coverDiv.classList.add("album-cover-div");
-        coverImg.classList.add("album-cover-img");
-        coverImg.src = musiclist[i].cover_link || noCover;
+		var myDiv = document.createElement('div');
 
-        infoDiv.classList.add("info-div");
-        infoArtist.classList.add("artist-name");
-        infoSong.classList.add("song-name");
-        infoArtist.textContent = musiclist[i].artist;
-        infoSong.textContent = musiclist[i].song;
+		var coverDiv = document.createElement('div');
+		var coverImg = document.createElement('img');
 
-        coverDiv.appendChild(coverImg);
-        infoDiv.appendChild(infoSong);
-        infoDiv.appendChild(infoArtist);
-        myDiv.appendChild(coverDiv);
-        myDiv.appendChild(infoDiv);
+		var infoDiv = document.createElement('div');
+		var infoSong = document.createElement('formatted-string');
+		var infoArtist = document.createElement('formatted-string');
 
+		myDiv.classList.add("song-div");
+		
+		coverDiv.classList.add("album-cover-div");
+		coverImg.classList.add("album-cover-img");
+		if (musiclist[i].cover_link == null) coverImg.src = noCover;
+		else coverImg.src = musiclist[i].cover_link;
 
-        (function(songData) {
-            myDiv.addEventListener('click', function () {
-                if (songData.link) {
-                    window.open(songData.link, "_blank");
-                } else {
-                    alert("이 노래는 링크가 없습니다.");
-                }
-            });
-        })(musiclist[i]);
+		infoDiv.classList.add("info-div");
+		infoArtist.classList.add("artist-name");
+		infoSong.classList.add("song-name");
+		infoArtist.textContent = musiclist[i].artist;
+		infoSong.textContent = musiclist[i].song;
 
-        myNode.appendChild(myDiv);
-    }
+		coverDiv.appendChild(coverImg);
+		infoDiv.appendChild(infoSong);
+		infoDiv.appendChild(infoArtist);
+		myDiv.appendChild(coverDiv);
+		myDiv.appendChild(infoDiv);
+
+	myDiv.addEventListener('click', function () {
+	const coverImg = this.querySelector("img");
+	const link = coverImg?.src;
+
+	// 만약 커버 이미지가 기본 이미지면 이동하지 않음
+	if (link && !link.includes("namu.wiki")) {
+		window.open(link, "_blank"); // 새 탭으로 열기
+	} else {
+		alert("이 노래는 링크가 없습니다.");
+	}
+});
+
+		myNode.appendChild(myDiv);
+	}
 }
 
