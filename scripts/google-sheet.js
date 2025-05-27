@@ -4,7 +4,7 @@ var genre = document.querySelector('genre');
 var category = document.querySelector('category');
 var random = document.querySelector('random');
 
-let myKey = "1HPIUuWYeoNAdluPPLx_QsSPTzYvenQ3N4eb-lw1m3AA"; // 스프레드시트 KEY
+let myKey = "e/2PACX-1vQdfH_59BAZlE9zEjd9_CtXxdnsx3Qq30MTWjje-AX8a-JCw551qtmE__0HgogG0l_GdtH2GRF-7Eih/pubhtml"; // 스프레드시트 KEY
 
 let noCover = `https://i.namu.wiki/i/PgMGTIiIqNjYe5R56mm0yzlejxWA3l15ZrjwTJA4T03s25vH7SuWLaEvKXhG7Q_VybX0goll8IfcTrKxja7fjg.webp`;
 
@@ -307,15 +307,17 @@ function populateSection(jsonObj, direction) {
 		myDiv.appendChild(coverDiv);
 		myDiv.appendChild(infoDiv);
 
-		myDiv.classList.add("clickable");
-		myDiv.addEventListener('click', function () {
-			var song = this.childNodes[1].childNodes[0];
-			var artist = this.childNodes[1].childNodes[1];
-			var text = song.textContent + " - " + artist.textContent;
-			window.navigator.clipboard.writeText(text).then(() => {
-				toast("복사완료");
-			});
-		});
+	myDiv.addEventListener('click', function () {
+	const coverImg = this.querySelector("img");
+	const link = coverImg?.src;
+
+	// 만약 커버 이미지가 기본 이미지면 이동하지 않음
+	if (link && !link.includes("namu.wiki")) {
+		window.open(link, "_blank"); // 새 탭으로 열기
+	} else {
+		alert("이 노래는 링크가 없습니다.");
+	}
+});
 
 		section.appendChild(myDiv);
 	}
