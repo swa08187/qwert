@@ -4,7 +4,7 @@ var genre = document.querySelector('genre');
 var category = document.querySelector('category');
 var random = document.querySelector('random');
 
-let myKey = "10t2OeFeHW2JZ1A_Hq-PcCMgWZiJ7MhwlTbT_-BqNxII"; // 스프레드시트 KEY
+let myKey = "1k1YX0o71OFHrMjTsPP5xjyLYLV0RBIG4muq0mKYgW9Q"; // 스프레드시트 KEY
 
 let noCover = `https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg`;
 
