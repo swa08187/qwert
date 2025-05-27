@@ -244,28 +244,23 @@ function random_select(jsonObj, num) {
 
 function populateSection(jsonObj, direction) {
     var musiclist = jsonObj;
-    console.log("populateSection", musiclist);
-    /* 기존 노래들 클리어 */
     const myNode = document.getElementById("musicList");
     while (myNode.lastElementChild) {
         myNode.removeChild(myNode.lastElementChild);
     }
 
-    /* 검색 입력창에 들어와있는 값 저장 */
     const search_value = document.getElementById("inputsearch").value.toLowerCase();
 
     var i, end;
     if (direction == 1) {
         i = 0;
         end = musiclist.length;
-    }
-    else {
+    } else {
         i = musiclist.length - 1;
         end = -1;
     }
 
-    for (i; i != end; i = i + direction) {
-        // 검색어 필터링
+    for (; i != end; i = i + direction) {
         if (search_value !== "") {
             if (
                 !musiclist[i].artist.toLowerCase().includes(search_value) &&
@@ -274,30 +269,24 @@ function populateSection(jsonObj, direction) {
                 continue;
             }
         }
-        // 카테고리 필터링
         if (category_selected !== "" && musiclist[i].category !== category_selected) {
             continue;
         }
-        // 장르 필터링
         if (genre_selected !== "" && musiclist[i].genre !== genre_selected) {
             continue;
         }
 
         var myDiv = document.createElement('div');
-
         var coverDiv = document.createElement('div');
         var coverImg = document.createElement('img');
-
         var infoDiv = document.createElement('div');
         var infoSong = document.createElement('formatted-string');
         var infoArtist = document.createElement('formatted-string');
 
         myDiv.classList.add("song-div");
-
         coverDiv.classList.add("album-cover-div");
         coverImg.classList.add("album-cover-img");
-        if (!musiclist[i].cover_link) coverImg.src = noCover;
-        else coverImg.src = musiclist[i].cover_link;
+        coverImg.src = musiclist[i].cover_link || noCover;
 
         infoDiv.classList.add("info-div");
         infoArtist.classList.add("artist-name");
@@ -311,29 +300,18 @@ function populateSection(jsonObj, direction) {
         myDiv.appendChild(coverDiv);
         myDiv.appendChild(infoDiv);
 
-       
-        myDiv.addEventListener('click', function () {
-           
-            const clickedSong = this.querySelector(".song-name").textContent;
-            const clickedArtist = this.querySelector(".artist-name").textContent;
 
-          
-            const found = musiclist.find(item =>
-                item.song === clickedSong && item.artist === clickedArtist
-            );
-
-            if (found && found.link) {
-                window.open(found.link, "_blank"); // 새 탭으로 열기
-            } else {
-                alert("이 노래는 링크가 없습니다.");
-            }
-        });
+        (function(songData) {
+            myDiv.addEventListener('click', function () {
+                if (songData.link) {
+                    window.open(songData.link, "_blank");
+                } else {
+                    alert("이 노래는 링크가 없습니다.");
+                }
+            });
+        })(musiclist[i]);
 
         myNode.appendChild(myDiv);
     }
 }
-
-}
-
-
 
