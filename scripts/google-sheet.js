@@ -1,8 +1,8 @@
 var header  = document.querySelector('header');
 var section = document.querySelector('section');
-var genre = document.querySelector('genre');
-var category = document.querySelector('category');
-var random = document.querySelector('random');
+var genre = document.querySelector('.genre');
+var category = document.querySelector('.category');
+var random = document.querySelector('.random');
 
 let myKey = "1B3PYJKKNa5L7EYwv4mQgpHBgmhhjIAFx2vqiCXgbyjU"; // 스프레드시트 KEY
 
