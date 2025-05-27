@@ -311,7 +311,7 @@ function populateSection(jsonObj, direction) {
 	const coverImg = this.querySelector("img");
 	const link = coverImg?.src;
 
-	// 만약 커버 이미지가 기본 이미지면 이동하지 않음
+	
 	if (link && !link.includes("namu.wiki")) {
 		window.open(link, "_blank"); // 새 탭으로 열기
 	} else {
