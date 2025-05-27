@@ -319,7 +319,7 @@ function populateSection(jsonObj, direction) {
 	}
 });
 
-		section.appendChild(myDiv);
+		myNode.appendChild(myDiv);
 	}
 }
 
