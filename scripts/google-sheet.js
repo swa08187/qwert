@@ -243,84 +243,96 @@ function random_select(jsonObj, num) {
 }
 
 function populateSection(jsonObj, direction) {
+    var musiclist = jsonObj;
+    console.log("populateSection", musiclist);
+    /* 기존 노래들 클리어 */
+    const myNode = document.getElementById("musicList");
+    while (myNode.lastElementChild) {
+        myNode.removeChild(myNode.lastElementChild);
+    }
 
-	var musiclist = jsonObj;
-	console.log("populateSection", musiclist);
-	/* 기존 노래들 클리어 */
-	const myNode = document.getElementById("musicList");
-	while (myNode.lastElementChild) {
-		myNode.removeChild(myNode.lastElementChild);
-	}
+    /* 검색 입력창에 들어와있는 값 저장 */
+    const search_value = document.getElementById("inputsearch").value.toLowerCase();
 
-	/* 검색 입력창에 들어와있는거 저장 */
-	const search_value = document.getElementById("inputsearch").value;
+    var i, end;
+    if (direction == 1) {
+        i = 0;
+        end = musiclist.length;
+    }
+    else {
+        i = musiclist.length - 1;
+        end = -1;
+    }
 
-	var i, end;
-	if (direction == 1) {
-		i = 0;
-		end = musiclist.length;
-	}
-	else {
-		i = musiclist.length - 1;
-		end = -1;
-	}
+    for (i; i != end; i = i + direction) {
+        // 검색어 필터링
+        if (search_value !== "") {
+            if (
+                !musiclist[i].artist.toLowerCase().includes(search_value) &&
+                !musiclist[i].song.toLowerCase().includes(search_value)
+            ) {
+                continue;
+            }
+        }
+        // 카테고리 필터링
+        if (category_selected !== "" && musiclist[i].category !== category_selected) {
+            continue;
+        }
+        // 장르 필터링
+        if (genre_selected !== "" && musiclist[i].genre !== genre_selected) {
+            continue;
+        }
 
-	for (i; i != end; i = i + direction) {
-		if ( search_value != "" ) {
-			if (musiclist[i].artist.indexOf(search_value)==-1 && 
-				musiclist[i].song.indexOf(search_value)==-1 ) {
-				continue; 
-			}
-		}
-		if ( (category_selected != "") && (musiclist[i].category != category_selected) ) {
-			continue;
-		}
-		if ( (genre_selected != "") && (musiclist[i].genre != genre_selected) ) {
-			continue;
-		}
+        var myDiv = document.createElement('div');
 
-		var myDiv = document.createElement('div');
+        var coverDiv = document.createElement('div');
+        var coverImg = document.createElement('img');
 
-		var coverDiv = document.createElement('div');
-		var coverImg = document.createElement('img');
+        var infoDiv = document.createElement('div');
+        var infoSong = document.createElement('formatted-string');
+        var infoArtist = document.createElement('formatted-string');
 
-		var infoDiv = document.createElement('div');
-		var infoSong = document.createElement('formatted-string');
-		var infoArtist = document.createElement('formatted-string');
+        myDiv.classList.add("song-div");
 
-		myDiv.classList.add("song-div");
-		
-		coverDiv.classList.add("album-cover-div");
-		coverImg.classList.add("album-cover-img");
-		if (musiclist[i].cover_link == null) coverImg.src = noCover;
-		else coverImg.src = musiclist[i].cover_link;
+        coverDiv.classList.add("album-cover-div");
+        coverImg.classList.add("album-cover-img");
+        if (!musiclist[i].cover_link) coverImg.src = noCover;
+        else coverImg.src = musiclist[i].cover_link;
 
-		infoDiv.classList.add("info-div");
-		infoArtist.classList.add("artist-name");
-		infoSong.classList.add("song-name");
-		infoArtist.textContent = musiclist[i].artist;
-		infoSong.textContent = musiclist[i].song;
+        infoDiv.classList.add("info-div");
+        infoArtist.classList.add("artist-name");
+        infoSong.classList.add("song-name");
+        infoArtist.textContent = musiclist[i].artist;
+        infoSong.textContent = musiclist[i].song;
 
-		coverDiv.appendChild(coverImg);
-		infoDiv.appendChild(infoSong);
-		infoDiv.appendChild(infoArtist);
-		myDiv.appendChild(coverDiv);
-		myDiv.appendChild(infoDiv);
+        coverDiv.appendChild(coverImg);
+        infoDiv.appendChild(infoSong);
+        infoDiv.appendChild(infoArtist);
+        myDiv.appendChild(coverDiv);
+        myDiv.appendChild(infoDiv);
 
-	myDiv.addEventListener('click', function () {
-	const coverImg = this.querySelector("img");
-	const link = coverImg?.src;
+       
+        myDiv.addEventListener('click', function () {
+           
+            const clickedSong = this.querySelector(".song-name").textContent;
+            const clickedArtist = this.querySelector(".artist-name").textContent;
 
-	// 만약 커버 이미지가 기본 이미지면 이동하지 않음
-	if (link && !link.includes("namu.wiki")) {
-		window.open(link, "_blank"); // 새 탭으로 열기
-	} else {
-		alert("이 노래는 링크가 없습니다.");
-	}
-});
+          
+            const found = musiclist.find(item =>
+                item.song === clickedSong && item.artist === clickedArtist
+            );
 
-		myNode.appendChild(myDiv);
-	}
+            if (found && found.link) {
+                window.open(found.link, "_blank"); // 새 탭으로 열기
+            } else {
+                alert("이 노래는 링크가 없습니다.");
+            }
+        });
+
+        myNode.appendChild(myDiv);
+    }
+}
+
 }
 
 
