@@ -1,8 +1,8 @@
 // JS 전체 코드 - Google Sheets API v4 버전
 
-const SHEET_ID = "1QTqccTGFGoKpCj3xj3ZOUr7K2klsEr_IW9qRs8xkDuQ";
-const API_KEY = "YOUR_API_KEY_HERE";  // 본인 API 키 입력
-const RANGE = "Sheet1!A2:D"; // 시트이름과 범위 조정 필요
+const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
+const API_KEY = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";  // 본인 API 키 입력
+const RANGE = "Sheet1!A2:F"; // 시트이름과 범위 조정 필요
 
 const genreContainer = document.querySelector('.genre-list');
 const randomContainer = document.querySelector('.random-music-list');
