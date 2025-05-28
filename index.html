@@ -1,132 +1,121 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="description" content="싱크룸용 노래책" />
-    <title>노래책</title>
-
-    <link href="styles/fonts.css" rel="stylesheet" type="text/css" />
-    <link href="styles/parameters.css" rel="stylesheet" type="text/css" />
-    <link href="styles/style.css" rel="stylesheet" type="text/css" />
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
-    />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>노래책</title>
+  <link href="styles/fonts.css" rel="stylesheet" />
+  <link href="styles/parameters.css" rel="stylesheet" />
+  <link href="styles/style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
 </head>
 <body>
-    <div class="base">
-        <div class="main-content" id="mainContent">
-            <div class="random-list">
-                <div class="header-group">
-                    <h2 class="random-list-header">
-                        <formatted-string class="random-list-title">랜덤 리스트</formatted-string>
-                    </h2>
-                </div>
-                <div class="content-group">
-                    <random class="random-music-list" id="RND"></random>
-                </div>
+  <div class="base">
+    <div class="main-content" id="mainContent">
+      <!-- 랜덤 리스트 섹션 -->
+      <div class="random-list">
+        <div class="header-group">
+          <h2 class="random-list-header">
+            <formatted-string class="random-list-title">랜덤 리스트</formatted-string>
+          </h2>
+        </div>
+        <div class="content-group">
+          <random class="random-music-list" id="RND"></random>
+        </div>
+      </div>
+
+      <!-- 메인 리스트 섹션 -->
+      <div class="main-list">
+        <div class="header-group">
+          <div class="title-group">
+            <h2 class="main-list-header">
+              <formatted-string class="main-list-title">모든 노래</formatted-string>
+            </h2>
+            <div class="search-box">
+              <div class="search-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </div>
+              <input type="text" id="inputsearch" placeholder="Search" class="search-text" />
             </div>
+          </div>
 
-            <div class="main-list">
-                <div class="header-group">
-                    <div class="title-group">
-                        <h2 class="main-list-header">
-                            <formatted-string class="main-list-title">모든 노래</formatted-string>
-                        </h2>
-                        <div class="search-box">
-                            <div class="search-icon">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </div>
-                            <input
-                                type="text"
-                                id="inputsearch"
-                                placeholder="Search"
-                                class="search-text"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="selector">
-                        <category></category>
-
-                        <div class="sort-select">
-                            <button type="button" class="sort-button clickable" id="bySinger">
-                                <formatted-string class="sort-text">
-                                    가수명순
-                                    <i class="fa-solid fa-arrow-down-short-wide"></i>
-                                </formatted-string>
-                            </button>
-                            <button type="button" class="sort-button clickable" id="bySong">
-                                <formatted-string class="sort-text">
-                                    곡명순
-                                    <i class="fa-solid fa-arrow-down-short-wide"></i>
-                                </formatted-string>
-                            </button>
-                            <button
-                                type="button"
-                                class="sort-button clickable button-selected"
-                                id="byAdd"
-                            >
-                                <formatted-string class="sort-text">
-                                    등록순
-                                    <i class="fa-solid fa-arrow-down-short-wide"></i>
-                                </formatted-string>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="selector">
-                        <genre class="genre-list"></genre>
-                    </div>
-                </div>
-
-                <!-- 노래 목록 섹션 -->
-                <section class="musicbook-list" id="musicbookList">
-                    <!-- 노래 목록을 여기 렌더링할 예정 -->
-                </section>
+          <div class="selector">
+            <category></category>
+            <div class="sort-select">
+              <button type="button" class="sort-button clickable" id="bySinger">
+                <formatted-string class="sort-text">
+                  가수명순
+                  <i class="fa-solid fa-arrow-down-short-wide"></i>
+                </formatted-string>
+              </button>
+              <button type="button" class="sort-button clickable" id="bySong">
+                <formatted-string class="sort-text">
+                  곡명순
+                  <i class="fa-solid fa-arrow-down-short-wide"></i>
+                </formatted-string>
+              </button>
+              <button type="button" class="sort-button clickable button-selected" id="byAdd">
+                <formatted-string class="sort-text">
+                  등록순
+                  <i class="fa-solid fa-arrow-down-short-wide"></i>
+                </formatted-string>
+              </button>
             </div>
+          </div>
+
+          <div class="selector">
+            <genre class="genre-list"></genre>
+          </div>
         </div>
 
-        <div class="sidebar-wrapper" id="sidebar-wrapper-id">
-            <div class="sidebar" id="sidebar-id">
-                <div class="sidebar-header">
-                    <h1>
-                        <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
-                    </h1>
-                </div>
-                <div class="sidebar-img">
-                    <img id="profile-pic" alt="Profile" />
-                </div>
-                <div class="introduction">
-                    <formatted-string class="introduction-text">
-                        비상업용 이용용도로 제작되었습니다.
-                    </formatted-string>
-                    <ul>
-                        <li>
-                            <formatted-string class="introduction-text">싱크룸 즐겨주세요.</formatted-string>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="nav">
-            <div class="nav-head">
-                <h1>
-                    <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
-                </h1>
-            </div>
-            <button type="button" class="menu-button" id="openMenu">
-                <i class="fa-solid fa-bars" id="menu-icon"></i>
-            </button>
-        </div>
-
-        <div id="toast" class="toast"></div>
-
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script src="scripts/func.js"></script>
+        <!-- 노래 목록 섹션 -->
+        <section class="musicbook-list" id="musicbookList">
+          <!-- 노래 목록이 여기에 렌더링됩니다 -->
+        </section>
+      </div>
     </div>
+
+    <!-- 사이드바 -->
+    <div class="sidebar-wrapper" id="sidebar-wrapper-id">
+      <div class="sidebar" id="sidebar-id">
+        <div class="sidebar-header">
+          <h1>
+            <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
+          </h1>
+        </div>
+        <div class="sidebar-img">
+          <img id="profile-pic" alt="Profile" />
+        </div>
+        <div class="introduction">
+          <formatted-string class="introduction-text">
+            비상업용 이용용도로 제작되었습니다.
+          </formatted-string>
+          <ul>
+            <li>
+              <formatted-string class="introduction-text">싱크룸 즐겨주세요.</formatted-string>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="nav">
+      <div class="nav-head">
+        <h1>
+          <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
+        </h1>
+      </div>
+      <button type="button" class="menu-button" id="openMenu">
+        <i class="fa-solid fa-bars" id="menu-icon"></i>
+      </button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- 스크립트 -->
+    <script src="scripts/func.js"></script>
+  </div>
 </body>
 </html>
 
