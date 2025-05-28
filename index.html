@@ -66,4 +66,67 @@
                             <button
                                 type="button"
                                 class="sort-button clickable button-selected"
+                                id="byAdd"
+                            >
+                                <formatted-string class="sort-text">
+                                    등록순
+                                    <i class="fa-solid fa-arrow-down-short-wide"></i>
+                                </formatted-string>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="selector">
+                        <genre class="genre-list"></genre>
+                    </div>
+                </div>
+
+                <!-- 노래 목록 섹션 -->
+                <section class="musicbook-list" id="musicbookList">
+                    <!-- 노래 목록을 여기 렌더링할 예정 -->
+                </section>
+            </div>
+        </div>
+
+        <div class="sidebar-wrapper" id="sidebar-wrapper-id">
+            <div class="sidebar" id="sidebar-id">
+                <div class="sidebar-header">
+                    <h1>
+                        <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
+                    </h1>
+                </div>
+                <div class="sidebar-img">
+                    <img id="profile-pic" alt="Profile" />
+                </div>
+                <div class="introduction">
+                    <formatted-string class="introduction-text">
+                        비상업용 이용용도로 제작되었습니다.
+                    </formatted-string>
+                    <ul>
+                        <li>
+                            <formatted-string class="introduction-text">싱크룸 즐겨주세요.</formatted-string>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav">
+            <div class="nav-head">
+                <h1>
+                    <formatted-string class="sidebar-header-text">싱크룸용 노래책</formatted-string>
+                </h1>
+            </div>
+            <button type="button" class="menu-button" id="openMenu">
+                <i class="fa-solid fa-bars" id="menu-icon"></i>
+            </button>
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="scripts/func.js"></script>
+    </div>
+</body>
+</html>
 
