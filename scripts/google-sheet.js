@@ -1,325 +1,159 @@
-var header  = document.querySelector('header');
-var section = document.querySelector('section');
-var genre = document.querySelector('genre');
-var category = document.querySelector('category');
-var random = document.querySelector('random');
+// Constants & Globals
+const SHEET_KEY = "10t2OeFeHW2JZ1A_Hq-PcCMgWZiJ7MhwlTbT_-BqNxII";
+const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_KEY}/gviz/tq?tqx=out:json`;
+const DEFAULT_COVER = "https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg";
 
-let myKey = "10t2OeFeHW2JZ1A_Hq-PcCMgWZiJ7MhwlTbT_-BqNxII"; // 스프레드시트 KEY
+const genreContainer = document.getElementById("genre");
+const categoryContainer = document.getElementById("category");
+const randomContainer = document.getElementById("random");
+const musicListContainer = document.getElementById("musicList");
+const searchInput = document.getElementById("inputsearch");
 
-let noCover = `https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg`;
+let musicData = [], currentGenre = "", currentCategory = "";
 
-var musicbook;
-var addOrdered;
-var artistOrdered;
-var songOrdered;
-
-var category_selected;
-var categories;
-var genre_selected;
-
+// Load & Init
 google.charts.load("current", { packages: ["corechart"] }).then(() => {
-	let query = new google.visualization.Query(
-		`https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json`
-	);
+    const query = new google.visualization.Query(SPREADSHEET_URL);
+    query.send(response => {
+        if (response.isError()) {
+            console.error("Query Error:", response.getMessage(), response.getDetailedMessage());
+            return;
+        }
 
-	query.send((response) => {
-		if (response.isError()) {
-			console.error(
-				"Error in query: " + response.getMessage() + " " + response.getDetailedMessage()
-			);
-			return;
-		}
+        const jsonTable = JSON.parse(response.getDataTable().toJSON());
+        const cols = ["order", "artist", "song", "genre", "category", "cover_link"];
 
-		let dataTable = response.getDataTable().toJSON(); 
-		let jsonData = JSON.parse(dataTable);
-		// let cols = jsonData.cols.map((col) => col.label); console.log("cols: \n", cols);
-		let cols = ["order", "artist", "song", "genre", "category", "cover_link"];
-		musicbook = jsonData.rows.map((row) => {
-			let newRow;
-			row.c.forEach((obj, index) => {
-				if (obj == null || obj == undefined) return; //빈값이 경우 정지
-				obj[cols[index]] = "f" in obj ? obj["f"] : obj["v"];
-				["f", "v"].forEach((each) => delete obj[each]);
-				newRow = { ...newRow, ...obj };
-			});
-			return newRow;
-		});
+        musicData = jsonTable.rows.map(row => {
+            const entry = {};
+            row.c.forEach((cell, idx) => {
+                if (cell) {
+                    entry[cols[idx]] = cell.f || cell.v;
+                }
+            });
+            return entry;
+        });
 
-		addOrdered = JSON.parse(JSON.stringify(musicbook));
-
-		musicbook.sort((a, b) => {
-			a = a.song.toLowerCase();
-			b = b.song.toLowerCase();
-			if (a > b) return 1;
-			if (a < b) return -1;
-			return 0;
-		});
-		songOrdered = JSON.parse(JSON.stringify(musicbook));
-		// console.log("Song Ordered\n", songOrdered);
-
-		musicbook.sort((a, b) => {
-			a = a.artist.toLowerCase();
-			b = b.artist.toLowerCase();
-			if (a > b) return 1;
-			if (a < b) return -1;
-			return 0;
-		});
-		artistOrdered = JSON.parse(JSON.stringify(musicbook));
-		// console.log("artist Ordered\n", artistOrdered);
-
-		category_populate(musicbook);
-		genre_populate(musicbook);
-		random_select(musicbook,6);
-
-		category_selected = "";
-		genre_selected = "";
-		sortAdded();
-	});
+        initFilters();
+        renderList(musicData);
+        renderRandom(musicData, 6);
+    });
 });
 
+// Utils
+const clearChildren = node => node && (node.innerHTML = "");
+const normalize = str => (str || "").toLowerCase();
 
-function genre_populate(jsonObj) {
+// Filtering / Rendering
+function renderList(data) {
+    clearChildren(musicListContainer);
 
-	categories = Array.from(new Set(jsonObj.map(item => item.genre)));
+    const filtered = data.filter(item => {
+        const matchesGenre = !currentGenre || item.genre === currentGenre;
+        const matchesCategory = !currentCategory || item.category === currentCategory;
+        const searchTerm = normalize(searchInput.value);
+        const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
+        return matchesGenre && matchesCategory && matchesSearch;
+    });
 
-	var cateDiv = document.createElement('div');
-	cateDiv.classList.add("genre-select");
-	genre.appendChild(cateDiv);
-
-	for (var i = 0; i < categories.length; i++) {
-		var cateName = document.createElement('button');
-		var cateString = document.createElement('formatted-string');
-
-		cateString.textContent = categories[i];
-		cateString.classList.add("genre-text");
-		cateName.appendChild(cateString);
-
-		cateName.classList.add("genre-button");
-		cateName.classList.add("clickable");
-		cateName.setAttribute("id", "genre-" + i);
-
-		cateName.addEventListener('click', function () {
-			var prev_sel = document.getElementsByClassName("genre-button");
-			if ( this.classList.contains("button-selected") ) {
-				for( var i = 0; i < prev_sel.length; i++ ){
-					prev_sel.item(i).classList.remove("button-selected");
-				}
-				genre_selected = "";
-				populateSection(musicbook, 1);
-			}
-			else {
-				for( var i = 0; i < prev_sel.length; i++ ){
-					prev_sel.item(i).classList.remove("button-selected");
-				}
-				this.classList.add("button-selected");
-				genre_selected = this.textContent;
-				populateSection(musicbook, 1);
-			}
-		});
-
-		cateDiv.appendChild(cateName);
-	}
+    for (const song of filtered) {
+        const songDiv = createSongItem(song);
+        musicListContainer.appendChild(songDiv);
+    }
 }
 
+function renderRandom(data, count) {
+    clearChildren(randomContainer);
 
+    const picked = [];
+    const maxTries = data.length * 2;
+    let tries = 0;
 
-function category_populate(jsonObj) {
+    while (picked.length < count && tries < maxTries) {
+        const candidate = data[Math.floor(Math.random() * data.length)];
+        if (!picked.includes(candidate)) picked.push(candidate);
+        tries++;
+    }
 
-	categories = Array.from(new Set(jsonObj.map(item => item.category)));
-
-	var cateDiv = document.createElement('div');
-	cateDiv.classList.add("category-select");
-	category.appendChild(cateDiv);
-
-	for (var i = 0; i < categories.length; i++) {
-		var cateName = document.createElement('button');
-		var cateString = document.createElement('formatted-string');
-
-		cateString.textContent = categories[i];
-		cateString.classList.add("category-text");
-		cateName.appendChild(cateString);
-
-		cateName.classList.add("category-button");
-		cateName.classList.add("clickable");
-		cateName.setAttribute("id", "category-" + i);
-
-		cateName.addEventListener('click', function () {
-			var prev_sel = document.getElementsByClassName("category-button");
-			if ( this.classList.contains("button-selected") ) {
-				for( var i = 0; i < prev_sel.length; i++ ){
-					prev_sel.item(i).classList.remove("button-selected");
-				}
-				category_selected = "";
-				populateSection(musicbook, 1);
-			}
-			else {
-				for( var i = 0; i < prev_sel.length; i++ ){
-					prev_sel.item(i).classList.remove("button-selected");
-				}
-				this.classList.add("button-selected");
-				category_selected = this.textContent;
-				populateSection(musicbook, 1);
-			}
-		});
-
-		cateDiv.appendChild(cateName);
-	}
+    picked.forEach(song => {
+        const songDiv = createSongItem(song, true);
+        randomContainer.appendChild(songDiv);
+    });
 }
 
+function createSongItem(song, isRandom = false) {
+    const div = document.createElement("div");
+    div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
 
-function getRndInteger(min, max) {
-	return Math.floor(Math.random() * (max - min) ) + min;
-}
-function random_select(jsonObj, num) {
+    const coverDiv = document.createElement("div");
+    coverDiv.classList.add(isRandom ? "random-cover-div" : "album-cover-div");
 
-	var musiclist = jsonObj;
+    const img = document.createElement("img");
+    img.src = song.cover_link || DEFAULT_COVER;
+    img.classList.add(isRandom ? "random-cover-img" : "album-cover-img");
+    coverDiv.appendChild(img);
 
-	/* 기존 노래들 클리어 */
-	const myNode = document.getElementsByClassName("random-music-list");
-	while (myNode.lastElementChild) {
-		myNode.removeChild(myNode.lastElementChild);
-	}
+    const infoDiv = document.createElement("div");
+    infoDiv.classList.add(isRandom ? "random-info-div" : "info-div");
 
-	var dup = [];
-	dup[0] = 0;
-	var i = 0;
+    const songEl = document.createElement("span");
+    songEl.textContent = song.song;
+    songEl.classList.add(isRandom ? "random-song-name" : "song-name");
 
-	for (i; i < num; i = i + 1) {
+    const artistEl = document.createElement("span");
+    artistEl.textContent = song.artist;
+    artistEl.classList.add(isRandom ? "random-artist-name" : "artist-name");
 
-		var rnd = getRndInteger(1, musiclist.length);
+    infoDiv.append(songEl, artistEl);
+    div.append(coverDiv, infoDiv);
 
-		
-		for (var j = 0; j < i; j = j + 1) { 
-			while (dup[j] == rnd) {
-				rnd = rnd + 1;
-				if (rnd == musiclist.length) { rnd = 1; }
-				j = 0;
-				console.log("Random Colide!");
-			}
-		}
-		dup[i] = rnd; 
+    div.onclick = () => {
+        const text = `${song.song} - ${song.artist}`;
+        navigator.clipboard.writeText(text).then(() => toast("복사완료"));
+    };
 
-		var myDiv = document.createElement('div');
-
-		var coverDiv = document.createElement('div');
-		var coverImg = document.createElement('img');
-
-		var infoDiv = document.createElement('div');
-		var infoSong = document.createElement('formatted-string');
-		var infoArtist = document.createElement('formatted-string');
-
-		myDiv.classList.add("random-song");
-		
-		coverDiv.classList.add("random-cover-div");
-		coverImg.classList.add("random-cover-img");
-		if (musiclist[rnd].cover_link == null) coverImg.src = noCover;
-		else coverImg.src = musiclist[rnd].cover_link;
-
-		infoDiv.classList.add("random-info-div");
-		infoArtist.classList.add("random-artist-name");
-		infoSong.classList.add("random-song-name");
-		infoArtist.textContent = musiclist[rnd].artist;
-		infoSong.textContent = musiclist[rnd].song;
-
-		coverDiv.appendChild(coverImg);
-		infoDiv.appendChild(infoSong);
-		infoDiv.appendChild(infoArtist);
-		myDiv.appendChild(coverDiv);
-		myDiv.appendChild(infoDiv);
-
-		myDiv.classList.add("clickable");
-		myDiv.addEventListener('click', function () {
-			var song = this.childNodes[1].childNodes[0];
-			var artist = this.childNodes[1].childNodes[1];
-			var text = song.textContent + " - " + artist.textContent;
-			window.navigator.clipboard.writeText(text).then(() => {
-				toast("복사완료");
-			});
-		});
-		
-		random.appendChild(myDiv);
-	}
-
+    return div;
 }
 
-function populateSection(jsonObj, direction) {
-
-	var musiclist = jsonObj;
-	console.log("populateSection", musiclist);
-	/* 기존 노래들 클리어 */
-	const myNode = document.getElementById("musicList");
-	while (myNode.lastElementChild) {
-		myNode.removeChild(myNode.lastElementChild);
-	}
-
-	/* 검색 입력창에 들어와있는거 저장 */
-	const search_value = document.getElementById("inputsearch").value;
-
-	var i, end;
-	if (direction == 1) {
-		i = 0;
-		end = musiclist.length;
-	}
-	else {
-		i = musiclist.length - 1;
-		end = -1;
-	}
-
-	for (i; i != end; i = i + direction) {
-		if ( search_value != "" ) {
-			if (musiclist[i].artist.indexOf(search_value)==-1 && 
-				musiclist[i].song.indexOf(search_value)==-1 ) {
-				continue; 
-			}
-		}
-		if ( (category_selected != "") && (musiclist[i].category != category_selected) ) {
-			continue;
-		}
-		if ( (genre_selected != "") && (musiclist[i].genre != genre_selected) ) {
-			continue;
-		}
-
-		var myDiv = document.createElement('div');
-
-		var coverDiv = document.createElement('div');
-		var coverImg = document.createElement('img');
-
-		var infoDiv = document.createElement('div');
-		var infoSong = document.createElement('formatted-string');
-		var infoArtist = document.createElement('formatted-string');
-
-		myDiv.classList.add("song-div");
-		
-		coverDiv.classList.add("album-cover-div");
-		coverImg.classList.add("album-cover-img");
-		if (musiclist[i].cover_link == null) coverImg.src = noCover;
-		else coverImg.src = musiclist[i].cover_link;
-
-		infoDiv.classList.add("info-div");
-		infoArtist.classList.add("artist-name");
-		infoSong.classList.add("song-name");
-		infoArtist.textContent = musiclist[i].artist;
-		infoSong.textContent = musiclist[i].song;
-
-		coverDiv.appendChild(coverImg);
-		infoDiv.appendChild(infoSong);
-		infoDiv.appendChild(infoArtist);
-		myDiv.appendChild(coverDiv);
-		myDiv.appendChild(infoDiv);
-
-		myDiv.classList.add("clickable");
-		myDiv.addEventListener('click', function () {
-			var song = this.childNodes[1].childNodes[0];
-			var artist = this.childNodes[1].childNodes[1];
-			var text = song.textContent + " - " + artist.textContent;
-			window.navigator.clipboard.writeText(text).then(() => {
-				toast("복사완료");
-			});
-		});
-
-		section.appendChild(myDiv);
-	}
+// Filter Button Builders
+function initFilters() {
+    buildFilterButtons(genreContainer, [...new Set(musicData.map(m => m.genre))], "genre");
+    buildFilterButtons(categoryContainer, [...new Set(musicData.map(m => m.category))], "category");
 }
-</script>
+
+function buildFilterButtons(container, values, type) {
+    clearChildren(container);
+
+    const wrapper = document.createElement("div");
+    wrapper.classList.add(`${type}-select`);
+    container.appendChild(wrapper);
+
+    values.forEach(val => {
+        const btn = document.createElement("button");
+        btn.textContent = val;
+        btn.classList.add(`${type}-button`, "clickable");
+
+        btn.onclick = () => {
+            const allBtns = wrapper.querySelectorAll("button");
+            allBtns.forEach(b => b.classList.remove("button-selected"));
+
+            if ((type === "genre" && currentGenre === val) || (type === "category" && currentCategory === val)) {
+                if (type === "genre") currentGenre = "";
+                if (type === "category") currentCategory = "";
+            } else {
+                btn.classList.add("button-selected");
+                if (type === "genre") currentGenre = val;
+                if (type === "category") currentCategory = val;
+            }
+
+            renderList(musicData);
+        };
+
+        wrapper.appendChild(btn);
+    });
+}
+
+// Hook for Search
+searchInput.addEventListener("input", () => renderList(musicData));
+
 
 		
