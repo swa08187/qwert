@@ -1,260 +1,169 @@
-var header  = document.querySelector('header');
-var section = document.querySelector('section');
-var genre = document.querySelector('.genre-list');
-var random = document.querySelector('.random-music-list');
+// JS 전체 코드 - Google Sheets API v4 버전
 
-let myKey = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg"; // 스프레드시트 KEY
-var requestURL = `https://docs.google.com/spreadsheets/d/${myKey}/gviz/tq?tqx=out:json`;
-var request = new XMLHttpRequest();
-var musicbook;
-var addOrdered;
-var singerOrdered;
-var songOrdered;
-var categories;
-request.open('GET', requestURL);
-request.responseType = 'text';
-request.send();
+const SHEET_ID = "1QTqccTGFGoKpCj3xj3ZOUr7K2klsEr_IW9qRs8xkDuQ";
+const API_KEY = "YOUR_API_KEY_HERE";  // 본인 API 키 입력
+const RANGE = "Sheet1!A2:D"; // 시트이름과 범위 조정 필요
 
-request.onload = function() {
-    var musicbookText = request.response.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/);
-    if (musicbookText && musicbookText.length == 2) {
-        const obj = JSON.parse(musicbookText[1]);
-        const table = obj.table;
-        const rows = table.rows.map(({c}) => c.map(e => e ? (e.v || "") : "")); // Modified from const rows = table.rows.map(({c}) => c.map(({v}) => v));
+const genreContainer = document.querySelector('.genre-list');
+const randomContainer = document.querySelector('.random-music-list');
+const musicListContainer = document.getElementById('musicList');
+const searchInput = document.getElementById('inputsearch');
 
-        //console.log(obj);
-        //console.log(table);
-        //console.log(rows);
-    }
-    musicbook = JSON.parse(musicbookText[1]).table.rows.map(({c}) => c.map(e => e ? (e.v || "") : ""));
+let musicbook = [];
+let categories = [];
+let cate_selected = "전체";
 
-    categorize(musicbook);
-    
-    addOrdered = JSON.parse(JSON.stringify(musicbook));
+// 1) Google Sheets API 호출
+function loadSheetData() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+  
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error("API 요청 실패");
+      return res.json();
+    })
+    .then(data => {
+      // data.values는 2차원 배열 [[artist, song, genre, cover], ...]
+      if (!data.values || data.values.length === 0) {
+        console.warn("시트에 데이터가 없습니다.");
+        return;
+      }
 
-    musicbook.sort(function(a, b) { return a[1]<b[1] ? -1 : (a[1]>b[1] ? 1 : 0); } );
-    songOrdered = JSON.parse(JSON.stringify(musicbook));
+      // 객체 배열로 변환
+      musicbook = data.values.map(row => ({
+        artist: row[0] || "",
+        song: row[1] || "",
+        genre: row[2] || "",
+        cover: row[3] || ""
+      }));
 
-    musicbook.sort(function(a, b) { return a[0]<b[0] ? -1 : (a[0]>b[0] ? 1 : 0); } );
-    singerOrdered = JSON.parse(JSON.stringify(musicbook));
-
-    musicbook = addOrdered;
-    
-    random_select(musicbook,6);
-    populateSection(musicbook, -1, "전체"); 
-}
-
-function categorize(jsonObj) {
-    var tmp_genre = [];
-    var cnt = 0;
-    var flag;
-
-    tmp_genre[cnt++] = "전체";
-    for (var i = 1; i < jsonObj.length; i++) {
-        flag = 0;
-        var looplength = (tmp_genre.length + 1);
-        for (var j = 0; j < looplength; j++) {
-            if (tmp_genre[j] == jsonObj[i][2]) {
-                flag++;
-            }
-        }
-        if (flag == 0) {
-            tmp_genre[cnt++] = jsonObj[i][2];
-        }
-    }
-    categories = JSON.parse(JSON.stringify(tmp_genre));
-
-    var cateDiv = document.createElement('div');
-    cateDiv.classList.add("genre-select");
-    genre.appendChild(cateDiv);
-
-    for (var i = 0; i < categories.length; i++) {
-        var cateName = document.createElement('button');
-        var cateString = document.createElement('formatted-string');
-
-        cateString.textContent = categories[i];
-        cateString.classList.add("genre-text");
-        cateName.appendChild(cateString);
-
-        cateName.classList.add("genre-button");
-        cateName.setAttribute("id", "genre-" + i);
-
-        cateDiv.appendChild(cateName);
-    }
-
-    cate_selected = "genre-0";
-    document.getElementById("genre-0").classList.add("button-selected");
-
-    var cate_click = document.getElementsByClassName("genre-button");
-    // console.log(cate_click);
-    for (var i = 0; i < cate_click.length; i++) {
-        // console.log(cate_click[i]);
-        cate_click[i].onclick = function() { 
-            // console.log(this);
-            document.getElementById(cate_selected).classList.remove("button-selected");
-            document.getElementById(this.id).classList.add("button-selected");
-            cate_selected = this.id;
-            // console.log(cate_selected);
-            populateSection(musicbook, 1, document.getElementById(cate_selected).textContent);
-        }
-    }
-}
-function getRndInteger(min, max) {
-    return Math.floor(Math.random() * (max - min) ) + min;
-}
-function random_select(jsonObj, num) {
-    var musiclist = jsonObj;
-
-    /* 기존 노래들 클리어 */
-    const myNode = document.getElementsByClassName("random-music-list")[0];
-    while (myNode.lastElementChild) {
-        myNode.removeChild(myNode.lastElementChild);
-    }
-
-    var dup = [];
-    var i = 0;
-
-    for (i; i < num; i++) {
-        var rnd = getRndInteger(1, musiclist.length);
-
-        for (var j = 0; j < i; j++) {
-            while (dup[j] == rnd) {
-                rnd = rnd + 1;
-                if (rnd == musiclist.length) { rnd = 1; }
-                j = 0;
-            }
-        }
-        dup[i] = rnd;
-
-        if (musiclist[rnd][0] == "가수") {
-            continue;
-        }
-
-        var myDiv = document.createElement('div');
-
-        var coverDiv = document.createElement('div');
-        var coverImg = document.createElement('img');
-
-        var infoDiv = document.createElement('div');
-        var infoSong = document.createElement('formatted-string');
-        var infoSinger = document.createElement('formatted-string');
-
-        myDiv.classList.add("random-song");
-
-        coverDiv.classList.add("random-cover-div");
-        coverImg.classList.add("random-cover-img");
-        coverImg.src = musiclist[rnd][3];
-
-        infoDiv.classList.add("random-info-div");
-        infoSinger.classList.add("random-artist-name");
-        infoSong.classList.add("random-song-name");
-        infoSinger.textContent = musiclist[rnd][0];
-        infoSong.textContent = musiclist[rnd][1];
-
-        coverDiv.appendChild(coverImg);
-        infoDiv.appendChild(infoSong);
-        infoDiv.appendChild(infoSinger);
-        myDiv.appendChild(coverDiv);
-        myDiv.appendChild(infoDiv);
-
-        myNode.appendChild(myDiv);
-    }
-}
-
-function populateSection(jsonObj, direction, cate_sel) {
-    var musiclist = jsonObj;
-
-    /* 기존 노래들 클리어 */
-    const myNode = document.getElementById("musicList");
-    while (myNode.lastElementChild) {
-        myNode.removeChild(myNode.lastElementChild);
-    }
-
-    /* 검색 입력창에 들어와있는거 저장 */
-    const search_value = document.getElementById("inputsearch").value;
-
-    var i, end;
-    if (direction == 1) {
-        i = 0;
-        end = musiclist.length;
-    }
-    else {
-        i = musiclist.length - 1;
-        end = -1;
-    }
-
-    for (i; i != end; i = i + direction) {
-        if (search_value != "") {
-            if (musiclist[i][0].indexOf(search_value) == -1 && musiclist[i][1].indexOf(search_value) == -1) {
-                continue;
-            }
-        }
-        if (musiclist[i][0] == "가수") {
-            continue;
-        }
-        if ((cate_sel != "전체") && (musiclist[i][2] != cate_sel)) {
-            continue;
-        }
-
-        var myDiv = document.createElement('div');
-
-        var coverDiv = document.createElement('div');
-        var coverImg = document.createElement('img');
-
-        var infoDiv = document.createElement('div');
-        var infoSong = document.createElement('formatted-string');
-        var infoSinger = document.createElement('formatted-string');
-
-        myDiv.classList.add("song-div");
-
-        coverDiv.classList.add("album-cover-div");
-        coverImg.classList.add("album-cover-img");
-        coverImg.src = musiclist[i][3];
-
-        infoDiv.classList.add("info-div");
-        infoSinger.classList.add("singer-name");
-        infoSong.classList.add("song-name");
-        infoSinger.textContent = musiclist[i][0];
-        infoSong.textContent = musiclist[i][1];
-
-        coverDiv.appendChild(coverImg);
-        infoDiv.appendChild(infoSong);
-        infoDiv.appendChild(infoSinger);
-        myDiv.appendChild(coverDiv);
-        myDiv.appendChild(infoDiv);
-
-        myNode.appendChild(myDiv);
-    }
-}
-
-
-
-
-
-/*
-
-var prev_sel = document.getElementsByClassName("category-button");
-for( var i = 0; i < prev_sel.length; i++ ){
-
-    prev_sel.item(i).addEventListener('click', function () {
-
-        var prev_sel = document.getElementsByClassName("category-button");
-        if ( this.classList.contains("button-selected") ) {
-            for( var i = 0; i < prev_sel.length; i++ ){
-                prev_sel.item(i).classList.remove("button-selected");
-            }
-            category_selected = "";
-			populateSection(musicbook, 1);
-        }
-        else {
-            for( var i = 0; i < prev_sel.length; i++ ){
-                prev_sel.item(i).classList.remove("button-selected");
-            }
-            this.classList.add("button-selected");
-			category_selected = this.textContent;
-            console.log(category_selected);
-			populateSection(musicbook, 1);
-        }
+      initUI();
+    })
+    .catch(err => {
+      console.error("데이터 로드 실패:", err);
     });
 }
-*/
+
+// 2) UI 초기화 및 이벤트 바인딩
+function initUI() {
+  categorize(musicbook);
+  random_select(musicbook, 6);
+  populateSection(musicbook, "전체");
+
+  // 장르 버튼 클릭 이벤트 이미 categorize 내에서 등록됨
+
+  // 검색 입력 이벤트
+  searchInput.addEventListener('input', () => {
+    populateSection(musicbook, cate_selected);
+  });
+}
+
+// 3) 장르(카테고리) 버튼 생성 및 클릭 처리
+function categorize(data) {
+  // 고유 장르 추출, "전체" 포함
+  const uniqueGenres = Array.from(new Set(data.map(d => d.genre))).filter(g => g);
+  categories = ["전체", ...uniqueGenres];
+
+  genreContainer.innerHTML = ""; // 초기화
+  const cateDiv = document.createElement('div');
+  cateDiv.classList.add("genre-select");
+  genreContainer.appendChild(cateDiv);
+
+  categories.forEach((genreName, idx) => {
+    const btn = document.createElement('button');
+    btn.textContent = genreName;
+    btn.classList.add("genre-button");
+    if (idx === 0) {
+      btn.classList.add("button-selected");
+    }
+    btn.id = "genre-" + idx;
+    btn.onclick = () => {
+      document.querySelectorAll(".genre-button").forEach(b => b.classList.remove("button-selected"));
+      btn.classList.add("button-selected");
+      cate_selected = genreName;
+      populateSection(musicbook, cate_selected);
+    };
+    cateDiv.appendChild(btn);
+  });
+}
+
+// 4) 랜덤 노래 6개 선택 & 표시
+function random_select(data, num) {
+  randomContainer.innerHTML = "";
+
+  const picked = [];
+  const maxTries = data.length * 3;
+  let tries = 0;
+  while (picked.length < num && tries < maxTries) {
+    const rndIndex = Math.floor(Math.random() * data.length);
+    if (!picked.includes(rndIndex) && data[rndIndex].artist !== "") {
+      picked.push(rndIndex);
+    }
+    tries++;
+  }
+
+  picked.forEach(idx => {
+    const song = data[idx];
+    const songDiv = createSongItem(song, true);
+    randomContainer.appendChild(songDiv);
+  });
+}
+
+// 5) 노래 목록 화면 표시
+function populateSection(data, genreFilter) {
+  musicListContainer.innerHTML = "";
+
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  const filtered = data.filter(item => {
+    const matchesGenre = (genreFilter === "전체") || (item.genre === genreFilter);
+    const matchesSearch = !searchTerm ||
+      item.song.toLowerCase().includes(searchTerm) ||
+      item.artist.toLowerCase().includes(searchTerm);
+    return matchesGenre && matchesSearch && item.artist !== "";
+  });
+
+  filtered.forEach(song => {
+    const songDiv = createSongItem(song, false);
+    musicListContainer.appendChild(songDiv);
+  });
+}
+
+// 6) 노래 아이템 DOM 생성 (랜덤 or 일반)
+function createSongItem(song, isRandom = false) {
+  const div = document.createElement("div");
+  div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
+
+  const coverDiv = document.createElement("div");
+  coverDiv.classList.add(isRandom ? "random-cover-div" : "album-cover-div");
+
+  const img = document.createElement("img");
+  img.src = song.cover || "https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg";
+  img.classList.add(isRandom ? "random-cover-img" : "album-cover-img");
+  coverDiv.appendChild(img);
+
+  const infoDiv = document.createElement("div");
+  infoDiv.classList.add(isRandom ? "random-info-div" : "info-div");
+
+  const songEl = document.createElement("span");
+  songEl.textContent = song.song;
+  songEl.classList.add(isRandom ? "random-song-name" : "song-name");
+
+  const artistEl = document.createElement("span");
+  artistEl.textContent = song.artist;
+  artistEl.classList.add(isRandom ? "random-artist-name" : "artist-name");
+
+  infoDiv.append(songEl, artistEl);
+  div.append(coverDiv, infoDiv);
+
+  div.onclick = () => {
+    const text = `${song.song} - ${song.artist}`;
+    navigator.clipboard.writeText(text).then(() => alert("복사 완료"));
+  };
+
+  return div;
+}
+
+// 7) 시작
+loadSheetData();
+
