@@ -1,70 +1,97 @@
+// ✅ 전역 변수 초기화
+let musicbook = [];
+let addOrdered = [];
+let artistOrdered = [];
+let singerOrdered = []; // 추가
+let songOrdered = [];   // 추가
 
-var sort_selected = "byAdd";
+let category_selected = "";
+let genre_selected = "";
 
-function searchEnter() {
-	if (window.event.keyCode==13) {               
-		populateSection(musicbook, 1);
+let categories = [];
+
+let sort_selected = "byAdd";
+let noCover = `https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg`;
+
+let removeToast;
+document.addEventListener("DOMContentLoaded", () => {
+
+	// ✅ 버튼 이벤트 연결은 DOM 로드 후
+	const openMenuBtn = document.getElementById("openMenu");
+	if (openMenuBtn) {
+		openMenuBtn.onclick = function () {
+			const sidebar = document.getElementById("sidebar-id");
+			const wrapper = document.getElementById("sidebar-wrapper-id");
+
+			if (sidebar) sidebar.classList.toggle("sidebar-hide");
+			if (wrapper) wrapper.classList.toggle("sidebar-wrapper-hide");
+		};
 	}
-}
-function searchUpdate() {
-	const search_update = document.getElementById("inputsearch");
-	search_update.setAttribute("value", search_update.value);
-}
 
+	// ✅ 초기 정렬 버튼 클릭 처리기 등록
+	const btnAdd = document.getElementById("byAdd");
+	const btnSinger = document.getElementById("bySinger");
+	const btnSong = document.getElementById("bySong");
+
+	if (btnAdd) btnAdd.onclick = sortAdded;
+	if (btnSinger) btnSinger.onclick = sortSinger;
+	if (btnSong) btnSong.onclick = sortSong;
+
+	// ✅ 입력창 검색 처리기
+	const input = document.getElementById("inputsearch");
+	if (input) {
+		input.addEventListener("keydown", (event) => {
+			if (event.key === "Enter") populateSection(musicbook, 1);
+		});
+		input.addEventListener("input", () => {
+			input.setAttribute("value", input.value);
+		});
+	}
+});
+
+// ✅ 정렬 함수들
 function sortSinger() {
-	document.getElementById(sort_selected).classList.remove("button-selected");
-	document.getElementById("bySinger").classList.add("button-selected");
+	const btn = document.getElementById("bySinger");
+	if (!btn || !singerOrdered) return;
+	document.getElementById(sort_selected)?.classList.remove("button-selected");
+	btn.classList.add("button-selected");
 	sort_selected = "bySinger";
 	musicbook = singerOrdered;
 	populateSection(musicbook, 1);
 }
+
 function sortSong() {
-	document.getElementById(sort_selected).classList.remove("button-selected");
-	document.getElementById("bySong").classList.add("button-selected");
+	const btn = document.getElementById("bySong");
+	if (!btn || !songOrdered) return;
+	document.getElementById(sort_selected)?.classList.remove("button-selected");
+	btn.classList.add("button-selected");
 	sort_selected = "bySong";
 	musicbook = songOrdered;
 	populateSection(musicbook, 1);
 }
+
 function sortAdded() {
-	document.getElementById(sort_selected).classList.remove("button-selected");
-	document.getElementById("byAdd").classList.add("button-selected");
+	const btn = document.getElementById("byAdd");
+	if (!btn || !addOrdered) return;
+	document.getElementById(sort_selected)?.classList.remove("button-selected");
+	btn.classList.add("button-selected");
 	sort_selected = "byAdd";
 	musicbook = addOrdered;
 	populateSection(musicbook, 1);
 }
 
+// ✅ 토스트 메시지 함수
+function toast(message) {
+	const toast = document.getElementById("toast");
+	if (!toast) return;
 
-document.getElementById("openMenu").onclick = function() {
-	var idLeft = document.getElementById("sidebar-id");
-	if (idLeft.classList.contains("sidebar-hide")) {
-		idLeft.classList.remove("sidebar-hide");
+	if (toast.classList.contains("reveal")) {
+		clearTimeout(removeToast);
+		removeToast = setTimeout(() => toast.classList.remove("reveal"), 1000);
+	} else {
+		removeToast = setTimeout(() => toast.classList.remove("reveal"), 3000);
 	}
-	else {
-		idLeft.classList.add("sidebar-hide");
-	}
-
-	idLeft = document.getElementById("sidebar-wrapper-id");
-	if (idLeft.classList.contains("sidebar-wrapper-hide")) {
-		idLeft.classList.remove("sidebar-wrapper-hide");
-	}
-	else {
-		idLeft.classList.add("sidebar-wrapper-hide");
-	}
-};        
-
-
-let removeToast;
-
-function toast(string) {
-    const toast = document.getElementById("toast");
-
-    toast.classList.contains("reveal") ?
-        (clearTimeout(removeToast), removeToast = setTimeout(function () {
-            document.getElementById("toast").classList.remove("reveal")
-        }, 1000)) :
-        removeToast = setTimeout(function () {
-            document.getElementById("toast").classList.remove("reveal")
-        }, 3000)
-    toast.classList.add("reveal"),
-        toast.innerText = string
+	toast.classList.add("reveal");
+	toast.innerText = message;
 }
+
