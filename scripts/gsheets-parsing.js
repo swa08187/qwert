@@ -1,12 +1,10 @@
-// JS 전체 코드 - Google Sheets API v4 버전
-
 const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
 const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";  // 본인 API 키 입력
 const RANGE = "시트1!A2:F"; // 시트이름과 범위 조정 필요
 
 const genreContainer = document.querySelector('.genre-list');
 const randomContainer = document.querySelector('.random-music-list');
-const musicListContainer = document.getElementById('musicList');
+const musicListContainer = document.getElementById('musicbookList');  // id 수정
 const searchInput = document.getElementById('inputsearch');
 
 let musicbook = [];
@@ -23,7 +21,7 @@ function loadSheetData() {
       return res.json();
     })
     .then(data => {
-      // data.values는 2차원 배열 [[artist, song, genre, cover], ...]
+      console.log("스프레드시트 데이터:", data.values);  // 디버깅용 출력
       if (!data.values || data.values.length === 0) {
         console.warn("시트에 데이터가 없습니다.");
         return;
@@ -49,8 +47,6 @@ function initUI() {
   categorize(musicbook);
   random_select(musicbook, 6);
   populateSection(musicbook, "전체");
-
-  // 장르 버튼 클릭 이벤트 이미 categorize 내에서 등록됨
 
   // 검색 입력 이벤트
   searchInput.addEventListener('input', () => {
@@ -166,4 +162,3 @@ function createSongItem(song, isRandom = false) {
 
 // 7) 시작
 loadSheetData();
-
