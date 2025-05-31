@@ -9,10 +9,24 @@
     input#inputsearch { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 16px; }
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
-    .song-div, .random-song { margin: 6px 0; padding: 8px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+    .song-div, .random-song {
+      margin: 6px 0; padding: 8px;
+      border: 1px solid #ccc; border-radius: 4px;
+      cursor: pointer;
+      display: flex; 
+      align-items: center;
+    }
     .song-div:hover, .random-song:hover { background-color: #eef; }
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
+    .song-div img, .random-song img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -174,12 +188,25 @@
       });
     }
 
-    // 노래 항목 생성
+    // 노래 항목 생성 (사진 포함)
     function createSongItem(song, isRandom = false) {
       const div = document.createElement("div");
       div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
-      div.textContent = `${song.song} - ${song.artist}`;
       div.title = `${song.song} - ${song.artist}`;
+
+      // 이미지
+      const img = document.createElement("img");
+      img.src = song.cover_link || "";
+      img.alt = `${song.song} cover`;
+      img.onerror = () => { img.style.display = "none"; }; // 이미지 없으면 숨김
+
+      // 텍스트
+      const textSpan = document.createElement("span");
+      textSpan.textContent = `${song.song} - ${song.artist}`;
+
+      div.appendChild(img);
+      div.appendChild(textSpan);
+
       div.onclick = () => {
         navigator.clipboard.writeText(`${song.song} - ${song.artist}`).then(() => {
           alert(`복사 완료: ${song.song} - ${song.artist}`);
@@ -198,3 +225,4 @@
   </script>
 </body>
 </html>
+
