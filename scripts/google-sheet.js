@@ -22,7 +22,7 @@
     // 여기에 아까 보여준 fetchSheetData 함수와 관련 JS 함수 모두 들어갑니다.
 
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
-    const API_KEY = "AIzaSyCdwduMQkMwOoOoTGQCoVFzImSnxFg9zOY"; // 실제 키 넣기
+    const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M"; // 실제 키 넣기
     const RANGE = "Sheet1!A2:F";
 
     const DEFAULT_COVER = "https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg";
