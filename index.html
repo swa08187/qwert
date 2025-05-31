@@ -10,29 +10,29 @@
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
     .song-div, .random-song {
-      margin: 6px 0; padding: 8px;
-      border: 1px solid #ccc; border-radius: 4px;
-      cursor: pointer;
-      display: flex; 
+      display: flex;
       align-items: center;
+      margin: 6px 0;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
     }
     .song-div:hover, .random-song:hover { background-color: #eef; }
+    .song-cover {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      margin-right: 12px;
+      border-radius: 4px;
+    }
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
-    .song-div img, .random-song img {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 4px;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
 
   <h1>싱크룸용 노래책</h1>
-
   <input type="text" id="inputsearch" placeholder="검색" />
 
   <div class="filter-group">
@@ -47,24 +47,20 @@
   <div id="musicList"></div>
 
   <script>
-    // 구글 시트 API 설정
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
     const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    const RANGE = "시트1!A2:F1000"; // 필요한 만큼 범위 조절
+    const RANGE = "시트1!A2:G1000"; // G열까지 (link 컬럼 포함)
 
-    // DOM 요소
     const genreContainer = document.getElementById("genre");
     const categoryContainer = document.getElementById("category");
     const randomContainer = document.getElementById("random");
     const musicListContainer = document.getElementById("musicList");
     const searchInput = document.getElementById("inputsearch");
 
-    // 데이터 저장 및 필터 상태
     let musicData = [];
     let currentGenre = "";
     let currentCategory = "";
 
-    // 데이터 불러오기
     async function fetchSheetData() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
 
@@ -78,8 +74,7 @@
           return;
         }
 
-        // 컬럼명
-        const columns = ["order", "artist", "song", "genre", "category", "cover_link"];
+        const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
 
         musicData = data.values.map(row => {
           const obj = {};
@@ -96,7 +91,6 @@
       }
     }
 
-    // 유틸 함수
     function clearChildren(node) {
       if (node) node.innerHTML = "";
     }
@@ -105,7 +99,6 @@
       return (str || "").toLowerCase();
     }
 
-    // 필터 초기화 및 버튼 생성
     function initFilters() {
       const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(g => g))];
       const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(c => c))];
@@ -123,7 +116,7 @@
         const btn = document.createElement("button");
         btn.textContent = val;
         btn.classList.add(`${type}-button`, "clickable");
-        if (val === "전체") btn.classList.add("button-selected"); // 기본 선택
+        if (val === "전체") btn.classList.add("button-selected");
 
         btn.onclick = () => {
           const allBtns = wrapper.querySelectorAll("button");
@@ -144,14 +137,13 @@
       });
     }
 
-    // 노래 리스트 렌더링
     function renderList(data) {
       clearChildren(musicListContainer);
       const searchTerm = normalize(searchInput.value);
 
       const filtered = data.filter(item => {
-        const matchesGenre = !currentGenre || currentGenre === "" || item.genre === currentGenre;
-        const matchesCategory = !currentCategory || currentCategory === "" || item.category === currentCategory;
+        const matchesGenre = !currentGenre || item.genre === currentGenre;
+        const matchesCategory = !currentCategory || item.category === currentCategory;
         const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
         return matchesGenre && matchesCategory && matchesSearch;
       });
@@ -169,7 +161,6 @@
       });
     }
 
-    // 랜덤 리스트 렌더링
     function renderRandom(data, count) {
       clearChildren(randomContainer);
       if (data.length === 0) return;
@@ -188,41 +179,32 @@
       });
     }
 
-    // 노래 항목 생성 (사진 포함)
     function createSongItem(song, isRandom = false) {
       const div = document.createElement("div");
       div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
-      div.title = `${song.song} - ${song.artist}`;
 
-      // 이미지
       const img = document.createElement("img");
-      img.src = song.cover_link || "";
-      img.alt = `${song.song} cover`;
-      img.onerror = () => { img.style.display = "none"; }; // 이미지 없으면 숨김
+      img.src = song.cover_link || "https://via.placeholder.com/60?text=No+Image";
+      img.alt = "커버 이미지";
+      img.className = "song-cover";
 
-      // 텍스트
-      const textSpan = document.createElement("span");
-      textSpan.textContent = `${song.song} - ${song.artist}`;
+      const text = document.createElement("div");
+      text.textContent = `${song.song} - ${song.artist}`;
 
       div.appendChild(img);
-      div.appendChild(textSpan);
+      div.appendChild(text);
 
-      div.onclick = () => {
-        navigator.clipboard.writeText(`${song.song} - ${song.artist}`).then(() => {
-          alert(`복사 완료: ${song.song} - ${song.artist}`);
-        }).catch(() => {
-          alert("복사 실패");
-        });
-      };
+      if (song.link) {
+        div.onclick = () => {
+          window.open(song.link, "_blank");
+        };
+      }
+
       return div;
     }
 
-    // 검색 입력에 리스너 연결
     searchInput.addEventListener("input", () => renderList(musicData));
-
-    // 페이지 로드 시 데이터 불러오기 시작
     fetchSheetData();
   </script>
 </body>
 </html>
-
