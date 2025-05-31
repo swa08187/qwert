@@ -1,6 +1,6 @@
 const API_KEY = 'AIzaSyCdwduMQkMwOoOoTGQCoVFzImSnxFg9zOY'; // 생성한 API 키로 대체
 const SPREADSHEET_ID = '1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg'; // 스프레드시트 ID로 대체
-const SHEET_NAME = 'Sheet1'; // 시트 이름으로 대체
+const SHEET_NAME = '시트1'; // 시트 이름으로 대체
 
 let musicbook = [];
 let addOrdered = [];
