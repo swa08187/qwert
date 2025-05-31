@@ -9,24 +9,10 @@
     input#inputsearch { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 16px; }
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
-    .song-div, .random-song {
-      margin: 6px 0; padding: 8px;
-      border: 1px solid #ccc; border-radius: 4px;
-      cursor: pointer;
-      display: flex; 
-      align-items: center;
-    }
+    .song-div, .random-song { margin: 6px 0; padding: 8px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
     .song-div:hover, .random-song:hover { background-color: #eef; }
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
-    .song-div img, .random-song img {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 4px;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
@@ -55,6 +41,160 @@
     // DOM 요소
     const genreContainer = document.getElementById("genre");
     const categoryContainer = document.getElementById("category");
-    const randomC
+    const randomContainer = document.getElementById("random");
+    const musicListContainer = document.getElementById("musicList");
+    const searchInput = document.getElementById("inputsearch");
 
+    // 데이터 저장 및 필터 상태
+    let musicData = [];
+    let currentGenre = "";
+    let currentCategory = "";
 
+    // 데이터 불러오기
+    async function fetchSheetData() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        if (!data.values || data.values.length === 0) {
+          console.error("스프레드시트 데이터가 비어있거나 없습니다.");
+          return;
+        }
+
+        // 컬럼명
+        const columns = ["order", "artist", "song", "genre", "category", "cover_link"];
+
+        musicData = data.values.map(row => {
+          const obj = {};
+          columns.forEach((col, idx) => obj[col] = row[idx] || "");
+          return obj;
+        });
+
+        initFilters();
+        renderList(musicData);
+        renderRandom(musicData, 6);
+
+      } catch (e) {
+        console.error("데이터 불러오기 실패:", e);
+      }
+    }
+
+    // 유틸 함수
+    function clearChildren(node) {
+      if (node) node.innerHTML = "";
+    }
+
+    function normalize(str) {
+      return (str || "").toLowerCase();
+    }
+
+    // 필터 초기화 및 버튼 생성
+    function initFilters() {
+      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(g => g))];
+      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(c => c))];
+      buildFilterButtons(genreContainer, genres, "genre");
+      buildFilterButtons(categoryContainer, categories, "category");
+    }
+
+    function buildFilterButtons(container, values, type) {
+      clearChildren(container);
+      const wrapper = document.createElement("div");
+      wrapper.classList.add(`${type}-select`);
+      container.appendChild(wrapper);
+
+      values.forEach(val => {
+        const btn = document.createElement("button");
+        btn.textContent = val;
+        btn.classList.add(`${type}-button`, "clickable");
+        if (val === "전체") btn.classList.add("button-selected"); // 기본 선택
+
+        btn.onclick = () => {
+          const allBtns = wrapper.querySelectorAll("button");
+          allBtns.forEach(b => b.classList.remove("button-selected"));
+
+          if (val === "전체") {
+            if (type === "genre") currentGenre = "";
+            if (type === "category") currentCategory = "";
+            allBtns[0].classList.add("button-selected");
+          } else {
+            btn.classList.add("button-selected");
+            if (type === "genre") currentGenre = val;
+            if (type === "category") currentCategory = val;
+          }
+          renderList(musicData);
+        };
+        wrapper.appendChild(btn);
+      });
+    }
+
+    // 노래 리스트 렌더링
+    function renderList(data) {
+      clearChildren(musicListContainer);
+      const searchTerm = normalize(searchInput.value);
+
+      const filtered = data.filter(item => {
+        const matchesGenre = !currentGenre || currentGenre === "" || item.genre === currentGenre;
+        const matchesCategory = !currentCategory || currentCategory === "" || item.category === currentCategory;
+        const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
+        return matchesGenre && matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        const noResult = document.createElement("div");
+        noResult.textContent = "검색 결과가 없습니다.";
+        musicListContainer.appendChild(noResult);
+        return;
+      }
+
+      filtered.forEach(song => {
+        const songDiv = createSongItem(song);
+        musicListContainer.appendChild(songDiv);
+      });
+    }
+
+    // 랜덤 리스트 렌더링
+    function renderRandom(data, count) {
+      clearChildren(randomContainer);
+      if (data.length === 0) return;
+
+      const picked = [];
+      const maxTries = data.length * 3;
+      let tries = 0;
+      while (picked.length < count && tries < maxTries) {
+        const candidate = data[Math.floor(Math.random() * data.length)];
+        if (!picked.includes(candidate)) picked.push(candidate);
+        tries++;
+      }
+      picked.forEach(song => {
+        const songDiv = createSongItem(song, true);
+        randomContainer.appendChild(songDiv);
+      });
+    }
+
+    // 노래 항목 생성
+    function createSongItem(song, isRandom = false) {
+      const div = document.createElement("div");
+      div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
+      div.textContent = `${song.song} - ${song.artist}`;
+      div.title = `${song.song} - ${song.artist}`;
+      div.onclick = () => {
+        navigator.clipboard.writeText(`${song.song} - ${song.artist}`).then(() => {
+          alert(`복사 완료: ${song.song} - ${song.artist}`);
+        }).catch(() => {
+          alert("복사 실패");
+        });
+      };
+      return div;
+    }
+
+    // 검색 입력에 리스너 연결
+    searchInput.addEventListener("input", () => renderList(musicData));
+
+    // 페이지 로드 시 데이터 불러오기 시작
+    fetchSheetData();
+  </script>
+</body>
+</html>
