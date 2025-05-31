@@ -23,7 +23,7 @@
 
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
     const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M"; // 실제 키 넣기
-    const RANGE = "시트1!A2:F";
+    const RANGE = "시트1!A2:F23";
 
     const DEFAULT_COVER = "https://i.ytimg.com/vi/-Sp9Xyaa3Nk/maxresdefault.jpg";
 
