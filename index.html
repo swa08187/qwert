@@ -12,8 +12,8 @@
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
 
-    /* 노래 목록, 랜덤 목록 가로 스크롤 컨테이너 */
-    #musicList, #random {
+    /* 랜덤 리스트: 가로 스크롤 유지 */
+    #random {
       display: flex;
       gap: 12px;
       overflow-x: auto;
@@ -21,9 +21,27 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* 노래 카드 */
+    /* 변경: 노래 목록을 그리드로 표시 */
+    #musicList {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      #musicList {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      #musicList {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 노래 카드 공통 */
     .song-div, .random-song {
-      flex: 0 0 250px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -169,7 +187,7 @@
             if (type === "category") currentCategory = val;
           }
           renderList();
-          renderRandom(); // 장르 변경 시 추천도 갱신
+          renderRandom();
         };
         wrapper.appendChild(btn);
       });
@@ -205,7 +223,6 @@
         return;
       }
 
-      // 가로 3개, 세로 10개 (총 30개) 나열 - flex 3줄이므로 그냥 30개만 렌더
       filtered.slice(0, 30).forEach(song => {
         const songDiv = createSongItem(song);
         musicListContainer.appendChild(songDiv);
