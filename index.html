@@ -12,8 +12,24 @@
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
 
-    /* 노래 목록, 랜덤 목록 가로 스크롤 컨테이너 */
-    #musicList, #random {
+    /* 노래 목록 영역은 가로 3열, 세로 n행 */
+    #musicList {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    /* 각 열을 세로로 정렬 */
+    .music-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      max-width: 33.33%;
+    }
+
+    /* 랜덤 목록 가로 스크롤 */
+    #random {
       display: flex;
       gap: 12px;
       overflow-x: auto;
@@ -23,7 +39,6 @@
 
     /* 노래 카드 */
     .song-div, .random-song {
-      flex: 0 0 250px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -55,6 +70,12 @@
 
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
+
+    /* 개수 선택 버튼 영역 */
+    #countSelector {
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -74,6 +95,13 @@
     <button onclick="setSort('order')">등록순</button>
   </div>
 
+  <!-- 표시 개수 선택 UI -->
+  <div id="countSelector">
+    <strong>표시 개수 선택: </strong>
+    <button id="count10Btn" class="button-selected">10개씩</button>
+    <button id="count20Btn">20개씩</button>
+  </div>
+
   <h2>랜덤 리스트</h2>
   <div id="random"></div>
 
@@ -91,10 +119,16 @@
     const musicListContainer = document.getElementById("musicList");
     const searchInput = document.getElementById("inputsearch");
 
+    const count10Btn = document.getElementById("count10Btn");
+    const count20Btn = document.getElementById("count20Btn");
+
     let musicData = [];
     let currentGenre = "";
     let currentCategory = "";
     let sortBy = "order";
+
+    // 기본 표시 행 개수 (열당): 10 or 20
+    let rowsToShow = 10;
 
     async function fetchSheetData() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
@@ -163,7 +197,7 @@
             if (type === "category") currentCategory = val;
           }
           renderList();
-          renderRandom(); // 장르 변경 시 추천도 갱신
+          renderRandom();
         };
         wrapper.appendChild(btn);
       });
@@ -174,6 +208,23 @@
       renderList();
     }
 
+    // 표시 개수 버튼 클릭 이벤트 연결
+    count10Btn.onclick = () => setRowsToShow(10);
+    count20Btn.onclick = () => setRowsToShow(20);
+
+    function setRowsToShow(n) {
+      rowsToShow = n;
+      if (n === 10) {
+        count10Btn.classList.add("button-selected");
+        count20Btn.classList.remove("button-selected");
+      } else {
+        count20Btn.classList.add("button-selected");
+        count10Btn.classList.remove("button-selected");
+      }
+      renderList();
+    }
+
+    // 노래 목록 렌더링 (3열 세로 정렬, rowsToShow 행)
     function renderList() {
       clearChildren(musicListContainer);
       const searchTerm = normalize(searchInput.value);
@@ -194,69 +245,5 @@
 
       if (filtered.length === 0) {
         const noResult = document.createElement("div");
-        noResult.textContent = "검색 결과가 없습니다.";
-        musicListContainer.appendChild(noResult);
-        return;
-      }
-
-      filtered.forEach(song => {
-        const songDiv = createSongItem(song);
-        musicListContainer.appendChild(songDiv);
-      });
-    }
-
-    function renderRandom() {
-      clearChildren(randomContainer);
-      let pool = musicData;
-      if (currentGenre) {
-        pool = musicData.filter(song => song.genre === currentGenre);
-      }
-
-      const picked = [];
-      const maxTries = pool.length * 3;
-      let tries = 0;
-      while (picked.length < 6 && tries < maxTries) {
-        const candidate = pool[Math.floor(Math.random() * pool.length)];
-        if (!picked.includes(candidate)) picked.push(candidate);
-        tries++;
-      }
-      picked.forEach(song => {
-        const songDiv = createSongItem(song, true);
-        randomContainer.appendChild(songDiv);
-      });
-    }
-
-    function createSongItem(song, isRandom = false) {
-      const div = document.createElement("div");
-      div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
-
-      const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/100x100?text=No+Image";
-      img.alt = "커버 이미지";
-      img.className = "song-cover";
-
-      const text = document.createElement("div");
-      text.textContent = `${song.song} - ${song.artist}`;
-
-      div.appendChild(img);
-      div.appendChild(text);
-
-      if (song.link) {
-        div.onclick = () => {
-          window.open(song.link, "_blank");
-        };
-      }
-
-      return div;
-    }
-
-    searchInput.addEventListener("input", () => renderList());
-    fetchSheetData();
-  </script>
-</body>
-</html>
-
-  </script>
-</body>
-</html>
+       
 
