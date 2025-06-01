@@ -12,32 +12,20 @@
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
 
-    /* 노래 목록 영역은 가로 3열, 세로 n행 */
+    /* 가로 3열 배치용 컨테이너 */
     #musicList {
       display: flex;
       gap: 12px;
       margin-top: 12px;
     }
-
-    /* 각 열을 세로로 정렬 */
     .music-column {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       flex: 1;
-      max-width: 33.33%;
     }
 
-    /* 랜덤 목록 가로 스크롤 */
-    #random {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* 노래 카드 */
+    /* 노래 카드, 랜덤 목록 */
     .song-div, .random-song {
       display: flex;
       flex-direction: column;
@@ -49,6 +37,7 @@
       background-color: white;
       color: black;
       transition: background-color 0.3s, color 0.3s;
+      width: 220px;
     }
     .song-div:hover, .random-song:hover {
       background-color: #eef;
@@ -71,10 +60,20 @@
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
 
-    /* 개수 선택 버튼 영역 */
-    #countSelector {
+    /* 랜덤 리스트 가로 스크롤 */
+    #random {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+    }
+
+    /* 가로/세로 선택 버튼 그룹 */
+    #countSelection {
       margin-top: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -90,159 +89,7 @@
 
   <div>
     <strong>정렬:</strong>
-    <button onclick="setSort('title')">곡명순</button>
-    <button onclick="setSort('artist')">가수명순</button>
-    <button onclick="setSort('order')">등록순</button>
-  </div>
-
-  <!-- 표시 개수 선택 UI -->
-  <div id="countSelector">
-    <strong>표시 개수 선택: </strong>
-    <button id="count10Btn" class="button-selected">10개씩</button>
-    <button id="count20Btn">20개씩</button>
-  </div>
-
-  <h2>랜덤 리스트</h2>
-  <div id="random"></div>
-
-  <h2>노래 목록</h2>
-  <div id="musicList"></div>
-
-  <script>
-    const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
-    const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    const RANGE = "시트1!A2:G1000";
-
-    const genreContainer = document.getElementById("genre");
-    const categoryContainer = document.getElementById("category");
-    const randomContainer = document.getElementById("random");
-    const musicListContainer = document.getElementById("musicList");
-    const searchInput = document.getElementById("inputsearch");
-
-    const count10Btn = document.getElementById("count10Btn");
-    const count20Btn = document.getElementById("count20Btn");
-
-    let musicData = [];
-    let currentGenre = "";
-    let currentCategory = "";
-    let sortBy = "order";
-
-    // 기본 표시 행 개수 (열당): 10 or 20
-    let rowsToShow = 10;
-
-    async function fetchSheetData() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        if (!data.values || data.values.length === 0) return;
-
-        const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-
-        musicData = data.values.map(row => {
-          const obj = {};
-          columns.forEach((col, idx) => obj[col] = row[idx] || "");
-          return obj;
-        });
-
-        initFilters();
-        renderList();
-        renderRandom();
-
-      } catch (e) {
-        console.error("데이터 불러오기 실패:", e);
-      }
-    }
-
-    function clearChildren(node) {
-      if (node) node.innerHTML = "";
-    }
-
-    function normalize(str) {
-      return (str || "").toLowerCase();
-    }
-
-    function initFilters() {
-      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(g => g))];
-      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(c => c))];
-      buildFilterButtons(genreContainer, genres, "genre");
-      buildFilterButtons(categoryContainer, categories, "category");
-    }
-
-    function buildFilterButtons(container, values, type) {
-      clearChildren(container);
-      const wrapper = document.createElement("div");
-      wrapper.classList.add(`${type}-select`);
-      container.appendChild(wrapper);
-
-      values.forEach(val => {
-        const btn = document.createElement("button");
-        btn.textContent = val;
-        btn.classList.add(`${type}-button`, "clickable");
-        if (val === "전체") btn.classList.add("button-selected");
-
-        btn.onclick = () => {
-          const allBtns = wrapper.querySelectorAll("button");
-          allBtns.forEach(b => b.classList.remove("button-selected"));
-
-          if (val === "전체") {
-            if (type === "genre") currentGenre = "";
-            if (type === "category") currentCategory = "";
-            allBtns[0].classList.add("button-selected");
-          } else {
-            btn.classList.add("button-selected");
-            if (type === "genre") currentGenre = val;
-            if (type === "category") currentCategory = val;
-          }
-          renderList();
-          renderRandom();
-        };
-        wrapper.appendChild(btn);
-      });
-    }
-
-    function setSort(type) {
-      sortBy = type;
-      renderList();
-    }
-
-    // 표시 개수 버튼 클릭 이벤트 연결
-    count10Btn.onclick = () => setRowsToShow(10);
-    count20Btn.onclick = () => setRowsToShow(20);
-
-    function setRowsToShow(n) {
-      rowsToShow = n;
-      if (n === 10) {
-        count10Btn.classList.add("button-selected");
-        count20Btn.classList.remove("button-selected");
-      } else {
-        count20Btn.classList.add("button-selected");
-        count10Btn.classList.remove("button-selected");
-      }
-      renderList();
-    }
-
-    // 노래 목록 렌더링 (3열 세로 정렬, rowsToShow 행)
-    function renderList() {
-      clearChildren(musicListContainer);
-      const searchTerm = normalize(searchInput.value);
-
-      let filtered = musicData.filter(item => {
-        const matchesGenre = !currentGenre || item.genre === currentGenre;
-        const matchesCategory = !currentCategory || item.category === currentCategory;
-        const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
-        return matchesGenre && matchesCategory && matchesSearch;
-      });
-
-      filtered.sort((a, b) => {
-        if (sortBy === "title") return a.song.localeCompare(b.song);
-        if (sortBy === "artist") return a.artist.localeCompare(b.artist);
-        if (sortBy === "order") return Number(a.order) - Number(b.order);
-        return 0;
-      });
-
+    <button onclick=
       if (filtered.length === 0) {
         const noResult = document.createElement("div");
        
