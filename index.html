@@ -5,64 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>노래책</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: var(--bg-color, white); color: var(--text-color, black); transition: background-color 0.3s, color 0.3s; }
-    input#inputsearch { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 16px; background-color: var(--input-bg, white); color: var(--input-text, black); border: 1px solid #ccc; border-radius: 4px; }
-    button { margin: 3px; padding: 6px 12px; cursor: pointer; background-color: var(--btn-bg, #eee); color: var(--btn-text, black); border: none; border-radius: 4px; transition: background-color 0.3s, color 0.3s; }
-    button:hover { background-color: var(--btn-hover-bg, #ddd); }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+
+    input#inputsearch { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 16px; }
+
+    button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
-    .song-div, .random-song {
+
+    /* 노래 목록, 랜덤 목록 가로 스크롤 컨테이너 */
+    #musicList, #random {
       display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* 노래 카드 */
+    .song-div, .random-song {
+      flex: 0 0 250px;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      margin: 6px 0;
-      padding: 8px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
+      padding: 8px;
       cursor: pointer;
-      background-color: var(--song-bg, white);
-      color: var(--song-text, black);
+      background-color: white;
+      color: black;
       transition: background-color 0.3s, color 0.3s;
     }
-    .song-div:hover, .random-song:hover { background-color: #eef; }
+    .song-div:hover, .random-song:hover {
+      background-color: #eef;
+    }
+
     .song-cover {
-      width: 100px;
-      height: 100px;
+      width: 200px;
+      height: 200px;
       object-fit: cover;
-      margin-right: 12px;
-      border-radius: 4px;
+      margin-bottom: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
     }
+
+    .song-div > div, .random-song > div {
+      text-align: center;
+      font-weight: bold;
+    }
+
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
-
-    /* 다크 모드 변수 */
-    .dark {
-      --bg-color: #121212;
-      --text-color: #eee;
-      --input-bg: #222;
-      --input-text: #eee;
-      --btn-bg: #333;
-      --btn-text: #eee;
-      --btn-hover-bg: #444;
-      --song-bg: #1e1e1e;
-      --song-text: #eee;
-      border-color: #444;
-    }
-
-    /* 다크모드에서 버튼 테두리 */
-    .dark button {
-      border: 1px solid #555;
-    }
   </style>
 </head>
 <body>
 
   <h1>싱크룸용 노래책</h1>
-
-  <!-- 다크모드 토글 버튼 추가 -->
-  <button id="theme-toggle" aria-label="테마 토글" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-    <span id="theme-icon">🌞</span>
-  </button>
-
   <input type="text" id="inputsearch" placeholder="검색" />
 
   <div class="filter-group">
@@ -255,28 +252,9 @@
 
     searchInput.addEventListener("input", () => renderList());
     fetchSheetData();
-
-
-    // 다크모드 토글 스크립트 시작
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = document.getElementById('theme-icon');
-    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (localStorage.getItem('theme') === 'dark' || (prefersDarkScheme && !localStorage.getItem('theme'))) {
-      document.documentElement.classList.add('dark');
-      themeIcon.textContent = '🌙';
-    } else {
-      document.documentElement.classList.remove('dark');
-      themeIcon.textContent = '🌞';
-    }
-
-    themeToggle.addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      themeIcon.textContent = isDarkMode ? '🌙' : '🌞';
-      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    });
-    // 다크모드 토글 스크립트 끝
+  </script>
+</body>
+</html>
 
   </script>
 </body>
