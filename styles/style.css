@@ -868,3 +868,172 @@ p {
 /*
 요소:p 같은거 { 속성 : 속성값 ; }
 */
+/* ---------------------------- */
+/* 기존에 주신 :root와 기본 스타일들 포함 */
+/* ---------------------------- */
+
+:root {
+  --main-bg-color: #E4E3E3;
+  --primary-color: #fed136;
+  --white-color: #ffffff;
+  --black-color: #000000;
+  /* ...중략... 기존 변수들 계속... */
+}
+
+/* 기본 초기화 스타일 */
+img {
+  border-style: none;
+}
+img, video {
+  height: auto;
+}
+img, svg, video, canvas, audio, iframe, embed, object {
+  display: block;
+}
+button, input, optgroup, select, textarea {
+  padding: 0px;
+  line-height: inherit;
+  color: inherit;
+}
+button, input {
+  overflow: visible;
+}
+button, input, optgroup, select, textarea {
+  font-family: inherit;
+  font-size: 100%;
+  margin: 0px;
+}
+*, ::before, ::after {
+  border-width: 0px;
+  border-style: solid;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background-color: var(--body-background);
+  height: 100vh; 
+  width: 100vw;
+}
+/* ... 기존 스타일 계속 ... */
+
+/* 여기에 제가 이전에 드렸던 스타일 추가합니다 */
+
+/* 노래책 레이아웃 스타일 */
+body, html {
+  margin: 0; padding: 0;
+  font-family: 'Pretendard', sans-serif;
+  background-color: var(--main-bg-color);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 전체 컨테이너 */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+}
+
+/* 상단 바: 검색창 왼쪽, 최근곡 오른쪽 */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: var(--primary-color);
+  color: var(--black-color);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 검색창 */
+.search-input {
+  width: 300px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.6rem;
+}
+
+/* 최근곡 리스트 */
+.recent-songs {
+  display: flex;
+  gap: 1rem;
+  max-width: 50vw;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  background-color: var(--white-color);
+  border-radius: 8px;
+  color: var(--black-color);
+  font-size: 1.4rem;
+}
+.recent-song-item {
+  white-space: nowrap;
+  padding: 0.2rem 0.6rem;
+  background-color: var(--main-bg-color);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.recent-song-item:hover {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+/* 하단 영역: 장르, 가수, 국가별 리스트 */
+.bottom-section {
+  flex: 1;
+  display: flex;
+  background-color: var(--white-color);
+  color: var(--black-color);
+  padding: 1rem 2rem;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+/* 각 목록 컨테이너 */
+.genre-list, .artist-list, .country-list {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: var(--main-bg-color);
+}
+
+/* 제목 */
+.list-title {
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+/* 항목들 */
+.list-item {
+  padding: 0.5rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+.list-item:hover, .list-item.selected {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+/* 반응형 간단 지원 */
+@media (max-width: 1024px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .bottom-section {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .genre-list, .artist-list, .country-list {
+    flex: none;
+    height: 150px;
+  }
+  .search-input {
+    width: 100%;
+  }
+}
