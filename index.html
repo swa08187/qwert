@@ -20,8 +20,8 @@
     }
     .song-div:hover, .random-song:hover { background-color: #eef; }
     .song-cover {
-      width: 60px;
-      height: 60px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
       margin-right: 12px;
       border-radius: 4px;
@@ -40,6 +40,13 @@
     <div id="category"></div>
   </div>
 
+  <div>
+    <strong>정렬:</strong>
+    <button onclick="setSort('title')">곡명순</button>
+    <button onclick="setSort('artist')">가수명순</button>
+    <button onclick="setSort('order')">등록순</button>
+  </div>
+
   <h2>랜덤 리스트</h2>
   <div id="random"></div>
 
@@ -49,8 +56,7 @@
   <script>
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
     const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    const SHEET_NAMES = ["시트1", "시트2"]; // 사용할 시트 이름들
-    const RANGE = "시트1!A2:G1000"; // G열까지 (link 컬럼 포함)
+    const RANGE = "시트1!A2:G1000";
 
     const genreContainer = document.getElementById("genre");
     const categoryContainer = document.getElementById("category");
@@ -61,6 +67,7 @@
     let musicData = [];
     let currentGenre = "";
     let currentCategory = "";
+    let sortBy = "order";
 
     async function fetchSheetData() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
@@ -68,12 +75,8 @@
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
         const data = await res.json();
-        if (!data.values || data.values.length === 0) {
-          console.error("스프레드시트 데이터가 비어있거나 없습니다.");
-          return;
-        }
+        if (!data.values || data.values.length === 0) return;
 
         const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
 
@@ -84,8 +87,8 @@
         });
 
         initFilters();
-        renderList(musicData);
-        renderRandom(musicData, 6);
+        renderList();
+        renderRandom();
 
       } catch (e) {
         console.error("데이터 불러오기 실패:", e);
@@ -132,21 +135,34 @@
             if (type === "genre") currentGenre = val;
             if (type === "category") currentCategory = val;
           }
-          renderList(musicData);
+          renderList();
+          renderRandom(); // 장르 변경 시 추천도 갱신
         };
         wrapper.appendChild(btn);
       });
     }
 
-    function renderList(data) {
+    function setSort(type) {
+      sortBy = type;
+      renderList();
+    }
+
+    function renderList() {
       clearChildren(musicListContainer);
       const searchTerm = normalize(searchInput.value);
 
-      const filtered = data.filter(item => {
+      let filtered = musicData.filter(item => {
         const matchesGenre = !currentGenre || item.genre === currentGenre;
         const matchesCategory = !currentCategory || item.category === currentCategory;
         const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
         return matchesGenre && matchesCategory && matchesSearch;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortBy === "title") return a.song.localeCompare(b.song);
+        if (sortBy === "artist") return a.artist.localeCompare(b.artist);
+        if (sortBy === "order") return Number(a.order) - Number(b.order);
+        return 0;
       });
 
       if (filtered.length === 0) {
@@ -162,15 +178,18 @@
       });
     }
 
-    function renderRandom(data, count) {
+    function renderRandom() {
       clearChildren(randomContainer);
-      if (data.length === 0) return;
+      let pool = musicData;
+      if (currentGenre) {
+        pool = musicData.filter(song => song.genre === currentGenre);
+      }
 
       const picked = [];
-      const maxTries = data.length * 3;
+      const maxTries = pool.length * 3;
       let tries = 0;
-      while (picked.length < count && tries < maxTries) {
-        const candidate = data[Math.floor(Math.random() * data.length)];
+      while (picked.length < 6 && tries < maxTries) {
+        const candidate = pool[Math.floor(Math.random() * pool.length)];
         if (!picked.includes(candidate)) picked.push(candidate);
         tries++;
       }
@@ -185,7 +204,7 @@
       div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
 
       const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/60x60?text=No+Image";
+      img.src = song.cover_link || "https://placehold.co/100x100?text=No+Image";
       img.alt = "커버 이미지";
       img.className = "song-cover";
 
@@ -204,7 +223,7 @@
       return div;
     }
 
-    searchInput.addEventListener("input", () => renderList(musicData));
+    searchInput.addEventListener("input", () => renderList());
     fetchSheetData();
   </script>
 </body>
