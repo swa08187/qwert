@@ -12,21 +12,18 @@
     button { margin: 3px; padding: 6px 12px; cursor: pointer; }
     .button-selected { background-color: #aaf; }
 
-    /* 가로 3열 배치용 컨테이너 */
-    #musicList {
+    /* 노래 목록, 랜덤 목록 가로 스크롤 컨테이너 */
+    #musicList, #random {
       display: flex;
       gap: 12px;
-      margin-top: 12px;
-    }
-    .music-column {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* 노래 카드, 랜덤 목록 */
+    /* 노래 카드 */
     .song-div, .random-song {
+      flex: 0 0 250px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -37,7 +34,6 @@
       background-color: white;
       color: black;
       transition: background-color 0.3s, color 0.3s;
-      width: 220px;
     }
     .song-div:hover, .random-song:hover {
       background-color: #eef;
@@ -59,22 +55,6 @@
 
     .filter-group { margin-bottom: 12px; }
     .filter-group > div { margin-bottom: 6px; }
-
-    /* 랜덤 리스트 가로 스크롤 */
-    #random {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      -webkit-overflow-scrolling: touch;
-      margin-bottom: 20px;
-    }
-
-    /* 가로/세로 선택 버튼 그룹 */
-    #countSelection {
-      margin-top: 12px;
-      margin-bottom: 20px;
-    }
   </style>
 </head>
 <body>
@@ -89,8 +69,190 @@
 
   <div>
     <strong>정렬:</strong>
-    <button onclick=
+    <button onclick="setSort('title')">곡명순</button>
+    <button onclick="setSort('artist')">가수명순</button>
+    <button onclick="setSort('order')">등록순</button>
+  </div>
+
+  <h2>랜덤 리스트</h2>
+  <div id="random"></div>
+
+  <h2>노래 목록</h2>
+  <div id="musicList"></div>
+
+  <script>
+    const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
+    const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
+    const RANGE = "시트1!A2:G1000";
+
+    const genreContainer = document.getElementById("genre");
+    const categoryContainer = document.getElementById("category");
+    const randomContainer = document.getElementById("random");
+    const musicListContainer = document.getElementById("musicList");
+    const searchInput = document.getElementById("inputsearch");
+
+    let musicData = [];
+    let currentGenre = "";
+    let currentCategory = "";
+    let sortBy = "order";
+
+    async function fetchSheetData() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (!data.values || data.values.length === 0) return;
+
+        const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
+
+        musicData = data.values.map(row => {
+          const obj = {};
+          columns.forEach((col, idx) => obj[col] = row[idx] || "");
+          return obj;
+        });
+
+        initFilters();
+        renderList();
+        renderRandom();
+
+      } catch (e) {
+        console.error("데이터 불러오기 실패:", e);
+      }
+    }
+
+    function clearChildren(node) {
+      if (node) node.innerHTML = "";
+    }
+
+    function normalize(str) {
+      return (str || "").toLowerCase();
+    }
+
+    function initFilters() {
+      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(g => g))];
+      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(c => c))];
+      buildFilterButtons(genreContainer, genres, "genre");
+      buildFilterButtons(categoryContainer, categories, "category");
+    }
+
+    function buildFilterButtons(container, values, type) {
+      clearChildren(container);
+      const wrapper = document.createElement("div");
+      wrapper.classList.add(`${type}-select`);
+      container.appendChild(wrapper);
+
+      values.forEach(val => {
+        const btn = document.createElement("button");
+        btn.textContent = val;
+        btn.classList.add(`${type}-button`, "clickable");
+        if (val === "전체") btn.classList.add("button-selected");
+
+        btn.onclick = () => {
+          const allBtns = wrapper.querySelectorAll("button");
+          allBtns.forEach(b => b.classList.remove("button-selected"));
+
+          if (val === "전체") {
+            if (type === "genre") currentGenre = "";
+            if (type === "category") currentCategory = "";
+            allBtns[0].classList.add("button-selected");
+          } else {
+            btn.classList.add("button-selected");
+            if (type === "genre") currentGenre = val;
+            if (type === "category") currentCategory = val;
+          }
+          renderList();
+          renderRandom(); // 장르 변경 시 추천도 갱신
+        };
+        wrapper.appendChild(btn);
+      });
+    }
+
+    function setSort(type) {
+      sortBy = type;
+      renderList();
+    }
+
+    function renderList() {
+      clearChildren(musicListContainer);
+      const searchTerm = normalize(searchInput.value);
+
+      let filtered = musicData.filter(item => {
+        const matchesGenre = !currentGenre || item.genre === currentGenre;
+        const matchesCategory = !currentCategory || item.category === currentCategory;
+        const matchesSearch = !searchTerm || normalize(item.song).includes(searchTerm) || normalize(item.artist).includes(searchTerm);
+        return matchesGenre && matchesCategory && matchesSearch;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortBy === "title") return a.song.localeCompare(b.song);
+        if (sortBy === "artist") return a.artist.localeCompare(b.artist);
+        if (sortBy === "order") return Number(a.order) - Number(b.order);
+        return 0;
+      });
+
       if (filtered.length === 0) {
         const noResult = document.createElement("div");
-       
+        noResult.textContent = "검색 결과가 없습니다.";
+        musicListContainer.appendChild(noResult);
+        return;
+      }
+
+      filtered.forEach(song => {
+        const songDiv = createSongItem(song);
+        musicListContainer.appendChild(songDiv);
+      });
+    }
+
+    function renderRandom() {
+      clearChildren(randomContainer);
+      let pool = musicData;
+      if (currentGenre) {
+        pool = musicData.filter(song => song.genre === currentGenre);
+      }
+
+      const picked = [];
+      const maxTries = pool.length * 3;
+      let tries = 0;
+      while (picked.length < 6 && tries < maxTries) {
+        const candidate = pool[Math.floor(Math.random() * pool.length)];
+        if (!picked.includes(candidate)) picked.push(candidate);
+        tries++;
+      }
+      picked.forEach(song => {
+        const songDiv = createSongItem(song, true);
+        randomContainer.appendChild(songDiv);
+      });
+    }
+
+    function createSongItem(song, isRandom = false) {
+      const div = document.createElement("div");
+      div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
+
+      const img = document.createElement("img");
+      img.src = song.cover_link || "https://placehold.co/100x100?text=No+Image";
+      img.alt = "커버 이미지";
+      img.className = "song-cover";
+
+      const text = document.createElement("div");
+      text.textContent = `${song.song} - ${song.artist}`;
+
+      div.appendChild(img);
+      div.appendChild(text);
+
+      if (song.link) {
+        div.onclick = () => {
+          window.open(song.link, "_blank");
+        };
+      }
+
+      return div;
+    }
+
+    searchInput.addEventListener("input", () => renderList());
+    fetchSheetData();
+  </script>
+</body>
+</html>
 
