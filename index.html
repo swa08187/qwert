@@ -5,43 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>노래책</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
 
-    input#inputsearch { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 16px; }
+    .dark-mode {
+      background-color: #111;
+      color: #eee;
+    }
 
-    button { margin: 3px; padding: 6px 12px; cursor: pointer; }
-    .button-selected { background-color: #aaf; }
+    input#inputsearch {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
 
-    /* 랜덤 리스트: 가로 스크롤 유지 */
-    #random {
+    button {
+      margin: 3px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .button-selected {
+      background-color: #aaf;
+    }
+
+    #musicList, #random {
       display: flex;
       gap: 12px;
-      overflow-x: auto;
+      flex-wrap: wrap;
       padding-bottom: 8px;
-      -webkit-overflow-scrolling: touch;
     }
 
-    /* 변경: 노래 목록을 그리드로 표시 */
-    #musicList {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    @media (max-width: 768px) {
-      #musicList {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      #musicList {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* 노래 카드 공통 */
     .song-div, .random-song {
+      width: calc(33.33% - 16px);
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -53,8 +54,19 @@
       color: black;
       transition: background-color 0.3s, color 0.3s;
     }
+
+    .dark-mode .song-div, .dark-mode .random-song {
+      background-color: #222;
+      color: #eee;
+      border-color: #444;
+    }
+
     .song-div:hover, .random-song:hover {
       background-color: #eef;
+    }
+
+    .dark-mode .song-div:hover, .dark-mode .random-song:hover {
+      background-color: #333;
     }
 
     .song-cover {
@@ -71,13 +83,35 @@
       font-weight: bold;
     }
 
-    .filter-group { margin-bottom: 12px; }
-    .filter-group > div { margin-bottom: 6px; }
+    .filter-group {
+      margin-bottom: 12px;
+    }
+
+    .filter-group > div {
+      margin-bottom: 6px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #pagination {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>싱크룸용 노래책</h1>
+  <div class="top-bar">
+    <h1>싱크룸용 노래책</h1>
+    <button onclick="toggleDarkMode()">🌙 다크모드</button>
+  </div>
+
   <input type="text" id="inputsearch" placeholder="검색" />
 
   <div class="filter-group">
@@ -97,6 +131,7 @@
 
   <h2>노래 목록</h2>
   <div id="musicList"></div>
+  <div id="pagination"></div>
 
   <script>
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
@@ -106,12 +141,15 @@
     const categoryContainer = document.getElementById("category");
     const randomContainer = document.getElementById("random");
     const musicListContainer = document.getElementById("musicList");
+    const paginationContainer = document.getElementById("pagination");
     const searchInput = document.getElementById("inputsearch");
 
     let musicData = [];
     let currentGenre = "";
     let currentCategory = "";
     let sortBy = "order";
+    let currentPage = 1;
+    const pageSize = 30;
 
     async function fetchSheetData() {
       const ranges = ["시트1!A2:G1000", "시트2!A2:G1000"];
@@ -127,8 +165,6 @@
             combinedValues = combinedValues.concat(data.values);
           }
         }
-
-        if (combinedValues.length === 0) return;
 
         const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
         musicData = combinedValues.map(row => {
@@ -146,17 +182,17 @@
       }
     }
 
-    function clearChildren(node) {
-      if (node) node.innerHTML = "";
-    }
-
     function normalize(str) {
       return (str || "").toLowerCase();
     }
 
+    function clearChildren(node) {
+      if (node) node.innerHTML = "";
+    }
+
     function initFilters() {
-      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(g => g))];
-      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(c => c))];
+      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(Boolean))];
+      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(Boolean))];
       buildFilterButtons(genreContainer, genres, "genre");
       buildFilterButtons(categoryContainer, categories, "category");
     }
@@ -164,28 +200,19 @@
     function buildFilterButtons(container, values, type) {
       clearChildren(container);
       const wrapper = document.createElement("div");
-      wrapper.classList.add(`${type}-select`);
       container.appendChild(wrapper);
 
       values.forEach(val => {
         const btn = document.createElement("button");
         btn.textContent = val;
-        btn.classList.add(`${type}-button`, "clickable");
         if (val === "전체") btn.classList.add("button-selected");
 
         btn.onclick = () => {
-          const allBtns = wrapper.querySelectorAll("button");
-          allBtns.forEach(b => b.classList.remove("button-selected"));
-
-          if (val === "전체") {
-            if (type === "genre") currentGenre = "";
-            if (type === "category") currentCategory = "";
-            allBtns[0].classList.add("button-selected");
-          } else {
-            btn.classList.add("button-selected");
-            if (type === "genre") currentGenre = val;
-            if (type === "category") currentCategory = val;
-          }
+          wrapper.querySelectorAll("button").forEach(b => b.classList.remove("button-selected"));
+          btn.classList.add("button-selected");
+          if (type === "genre") currentGenre = val === "전체" ? "" : val;
+          if (type === "category") currentCategory = val === "전체" ? "" : val;
+          currentPage = 1;
           renderList();
           renderRandom();
         };
@@ -195,13 +222,15 @@
 
     function setSort(type) {
       sortBy = type;
+      currentPage = 1;
       renderList();
     }
 
     function renderList() {
       clearChildren(musicListContainer);
-      const searchTerm = normalize(searchInput.value);
+      clearChildren(paginationContainer);
 
+      const searchTerm = normalize(searchInput.value);
       let filtered = musicData.filter(item => {
         const matchesGenre = !currentGenre || item.genre === currentGenre;
         const matchesCategory = !currentCategory || item.category === currentCategory;
@@ -216,33 +245,53 @@
         return 0;
       });
 
+      const totalPages = Math.ceil(filtered.length / pageSize);
+      const start = (currentPage - 1) * pageSize;
+      const pageData = filtered.slice(start, start + pageSize);
+
+      pageData.forEach(song => {
+        const songDiv = createSongItem(song);
+        musicListContainer.appendChild(songDiv);
+      });
+
+      if (totalPages > 1) {
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "이전";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+          currentPage--;
+          renderList();
+        };
+
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "다음";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+          currentPage++;
+          renderList();
+        };
+
+        paginationContainer.appendChild(prevBtn);
+        const pageInfo = document.createElement("span");
+        pageInfo.textContent = `${currentPage} / ${totalPages}`;
+        paginationContainer.appendChild(pageInfo);
+        paginationContainer.appendChild(nextBtn);
+      }
+
       if (filtered.length === 0) {
         const noResult = document.createElement("div");
         noResult.textContent = "검색 결과가 없습니다.";
         musicListContainer.appendChild(noResult);
-        return;
       }
-
-      filtered.slice(0, 30).forEach(song => {
-        const songDiv = createSongItem(song);
-        musicListContainer.appendChild(songDiv);
-      });
     }
 
     function renderRandom() {
       clearChildren(randomContainer);
-      let pool = musicData;
-      if (currentGenre) {
-        pool = musicData.filter(song => song.genre === currentGenre);
-      }
-
+      let pool = currentGenre ? musicData.filter(song => song.genre === currentGenre) : musicData;
       const picked = [];
-      const maxTries = pool.length * 3;
-      let tries = 0;
-      while (picked.length < 6 && tries < maxTries) {
-        const candidate = pool[Math.floor(Math.random() * pool.length)];
-        if (!picked.includes(candidate)) picked.push(candidate);
-        tries++;
+      while (picked.length < 6 && pool.length > 0) {
+        const random = pool[Math.floor(Math.random() * pool.length)];
+        if (!picked.includes(random)) picked.push(random);
       }
       picked.forEach(song => {
         const songDiv = createSongItem(song, true);
@@ -252,11 +301,10 @@
 
     function createSongItem(song, isRandom = false) {
       const div = document.createElement("div");
-      div.classList.add(isRandom ? "random-song" : "song-div", "clickable");
+      div.className = isRandom ? "random-song" : "song-div";
 
       const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/100x100?text=No+Image";
-      img.alt = "커버 이미지";
+      img.src = song.cover_link || "https://placehold.co/200x200?text=No+Image";
       img.className = "song-cover";
 
       const text = document.createElement("div");
@@ -266,15 +314,21 @@
       div.appendChild(text);
 
       if (song.link) {
-        div.onclick = () => {
-          window.open(song.link, "_blank");
-        };
+        div.onclick = () => window.open(song.link, "_blank");
       }
 
       return div;
     }
 
-    searchInput.addEventListener("input", () => renderList());
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    searchInput.addEventListener("input", () => {
+      currentPage = 1;
+      renderList();
+    });
+
     fetchSheetData();
   </script>
 </body>
