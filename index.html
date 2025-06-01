@@ -134,12 +134,12 @@
 
   <div>
     <strong>정렬:</strong>
-    <button onclick="setSort('title')">곡명순</button>
-    <button onclick="setSort('artist')">가수명순</button>
-    <button onclick="setSort('order')">등록순</button>
+    <button id="sort-title" onclick="setSort('title')">곡명순</button>
+    <button id="sort-artist" onclick="setSort('artist')">가수명순</button>
+    <button id="sort-order" onclick="setSort('order')">등록순</button>
   </div>
 
-  <h2>랜덤 추천</h2>
+  <h2>랜덤 추천 <button onclick="renderRandom()">🔄</button></h2>
   <div id="random"></div>
 
   <h2>노래 목록</h2>
@@ -210,6 +210,9 @@
 
     function setSort(type) {
       sortBy = type;
+      document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
+      const selectedBtn = document.getElementById(`sort-${type}`);
+      if (selectedBtn) selectedBtn.classList.add("button-selected");
       renderList();
     }
 
@@ -274,10 +277,6 @@
 
     searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
     fetchSheetData();
-  </script>
-</body>
-</html>
-
   </script>
 </body>
 </html>
