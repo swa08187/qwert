@@ -83,7 +83,6 @@
   <script>
     const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
     const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    const RANGE = "시트1!A2:G1000";
 
     const genreContainer = document.getElementById("genre");
     const categoryContainer = document.getElementById("category");
@@ -97,17 +96,24 @@
     let sortBy = "order";
 
     async function fetchSheetData() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000"];
+      let combinedValues = [];
 
       try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        if (!data.values || data.values.length === 0) return;
+        for (const range of ranges) {
+          const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          const data = await res.json();
+          if (data.values && data.values.length > 0) {
+            combinedValues = combinedValues.concat(data.values);
+          }
+        }
+
+        if (combinedValues.length === 0) return;
 
         const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-
-        musicData = data.values.map(row => {
+        musicData = combinedValues.map(row => {
           const obj = {};
           columns.forEach((col, idx) => obj[col] = row[idx] || "");
           return obj;
@@ -199,7 +205,8 @@
         return;
       }
 
-      filtered.forEach(song => {
+      // 가로 3개, 세로 10개 (총 30개) 나열 - flex 3줄이므로 그냥 30개만 렌더
+      filtered.slice(0, 30).forEach(song => {
         const songDiv = createSongItem(song);
         musicListContainer.appendChild(songDiv);
       });
@@ -255,4 +262,3 @@
   </script>
 </body>
 </html>
-
