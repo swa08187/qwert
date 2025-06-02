@@ -6,115 +6,246 @@
   <title>노래책</title>
   <style>
     :root {
+      --main-color: #c0d9ec;
       --bg: white;
-      --text: black;
-      --card-bg: white;
+      --text: #222;
+      --card-bg: #f9faff;
+      --btn-bg: var(--main-color);
+      --btn-text: white;
+      --btn-hover-bg: #a8c9e6;
     }
     body.dark {
       --bg: #121212;
-      --text: #f0f0f0;
+      --text: #e0e0e0;
       --card-bg: #1e1e1e;
+      --btn-bg: #3a5a8f;
+      --btn-text: #ddd;
+      --btn-hover-bg: #567abf;
     }
 
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Noto Sans KR', Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding: 16px;
       margin: 0;
+      padding: 20px 16px;
+      min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 18px;
+      border-bottom: 2px solid var(--main-color);
+      padding-bottom: 8px;
+    }
+
+    header h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: var(--main-color);
+      margin: 0;
     }
 
     .dark-toggle {
-      font-size: 20px;
+      font-size: 28px;
       cursor: pointer;
+      user-select: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      transition: background-color 0.3s;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+    }
+    .dark-toggle:hover {
+      background-color: var(--btn-hover-bg);
     }
 
     input#inputsearch {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+      max-width: 480px;
+      padding: 12px 14px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 2px solid var(--main-color);
       background-color: var(--card-bg);
       color: var(--text);
+      margin-bottom: 18px;
+      outline-offset: 2px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    input#inputsearch:focus {
+      border-color: #517db5;
+      background-color: var(--bg);
     }
 
-    button {
-      margin: 4px;
-      padding: 6px 12px;
-      border-radius: 6px;
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+      max-width: 480px;
+    }
+    .filter-group > div {
+      flex: 1;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+    .filter-group button {
+      background-color: var(--card-bg);
+      border: 1.5px solid var(--main-color);
+      color: var(--main-color);
+      padding: 8px 14px;
+      margin-right: 8px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      user-select: none;
+    }
+    .filter-group button:hover:not(.button-selected) {
+      background-color: var(--main-color);
+      color: white;
+    }
+    .filter-group button.button-selected {
+      background-color: var(--main-color);
+      color: white;
+      box-shadow: 0 0 8px var(--main-color);
+      cursor: default;
+    }
+
+    /* 정렬 버튼 */
+    div > strong {
+      font-weight: 700;
+      margin-right: 10px;
+    }
+    div > button {
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border-radius: 8px;
+      padding: 8px 16px;
       border: none;
       cursor: pointer;
+      margin-right: 8px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+      user-select: none;
     }
-    .button-selected {
-      background-color: #88f;
-      color: white;
+    div > button:hover:not(.button-selected) {
+      background-color: var(--btn-hover-bg);
+    }
+    div > button.button-selected {
+      box-shadow: 0 0 12px var(--btn-bg);
+      cursor: default;
+    }
+
+    h2 {
+      margin-top: 32px;
+      color: var(--main-color);
+      font-weight: 700;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 button {
+      font-size: 20px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      transition: background-color 0.3s;
+    }
+    h2 button:hover {
+      background-color: var(--btn-hover-bg);
     }
 
     #musicList, #random {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
       justify-content: center;
+      margin-top: 12px;
     }
 
     .song-div, .random-song {
-      width: 100%;
-      max-width: 300px;
       background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgb(0 0 0 / 0.1);
+      width: 100%;
+      max-width: 280px;
+      padding: 12px;
       color: var(--text);
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 8px;
-      text-align: center;
-      transition: background-color 0.3s;
       cursor: pointer;
+      user-select: none;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
     .song-div:hover, .random-song:hover {
-      background-color: #eef;
+      transform: translateY(-6px);
+      box-shadow: 0 6px 16px rgb(0 0 0 / 0.2);
+      background-color: #d9e7fb;
+      color: #003366;
     }
 
     .song-cover {
       width: 100%;
-      max-width: 100%;
+      max-width: 260px;
       height: auto;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    .filter-group {
-      margin-bottom: 12px;
-    }
-    .filter-group > div {
-      margin-bottom: 6px;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .filter-group button {
-      white-space: nowrap;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
     }
 
     .pagination {
       display: flex;
       justify-content: center;
-      margin-top: 12px;
+      margin-top: 24px;
       flex-wrap: wrap;
+      gap: 8px;
     }
     .pagination button {
-      margin: 2px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s;
+      user-select: none;
+    }
+    .pagination button:hover:not(.button-selected) {
+      background-color: var(--btn-hover-bg);
+    }
+    .pagination button.button-selected {
+      box-shadow: 0 0 12px var(--btn-bg);
+      cursor: default;
     }
 
     @media (min-width: 600px) {
       .song-div, .random-song {
         flex: 0 0 30%;
+      }
+      .filter-group {
+        max-width: none;
+      }
+      input#inputsearch {
+        max-width: 600px;
       }
     }
   </style>
@@ -122,10 +253,10 @@
 <body>
   <header>
     <h1>싱크룸용 노래책</h1>
-    <div class="dark-toggle" onclick="toggleDarkMode()">🌙</div>
+    <div class="dark-toggle" title="다크모드 토글" onclick="toggleDarkMode()">🌙</div>
   </header>
 
-  <input type="text" id="inputsearch" placeholder="검색" />
+  <input type="text" id="inputsearch" placeholder="검색" autocomplete="off" />
 
   <div class="filter-group">
     <div id="genre"></div>
@@ -136,10 +267,10 @@
     <strong>정렬:</strong>
     <button id="sort-title" onclick="setSort('title')">곡명순</button>
     <button id="sort-artist" onclick="setSort('artist')">가수명순</button>
-    <button id="sort-order" onclick="setSort('order')">등록순</button>
+    <button id="sort-order" onclick="setSort('order')" class="button-selected">등록순</button>
   </div>
 
-  <h2>랜덤 추천 <button onclick="renderRandom()">🔄</button></h2>
+  <h2>랜덤 추천 <button onclick="renderRandom()" title="랜덤 추천 갱신">🔄</button></h2>
   <div id="random"></div>
 
   <h2>노래 목록</h2>
@@ -171,7 +302,7 @@
       const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
       let combined = [];
       for (const range of ranges) {
-        const res = await fetch(https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY});
+        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`);
         const data = await res.json();
         if (data.values) combined = combined.concat(data.values);
       }
@@ -211,8 +342,9 @@
     function setSort(type) {
       sortBy = type;
       document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
-      const selectedBtn = document.getElementById(sort-${type});
+      const selectedBtn = document.getElementById(`sort-${type}`);
       if (selectedBtn) selectedBtn.classList.add("button-selected");
+      currentPage = 1;
       renderList();
     }
 
@@ -263,20 +395,4 @@
     function createSongItem(song, isRandom = false) {
       const div = document.createElement("div");
       div.className = isRandom ? "random-song" : "song-div";
-      const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/200x200?text=No+Image";
-      img.alt = "cover";
-      img.className = "song-cover";
-      const info = document.createElement("div");
-      info.textContent = ${song.song} - ${song.artist};
-      div.appendChild(img);
-      div.appendChild(info);
-      if (song.link) div.onclick = () => window.open(song.link);
-      return div;
-    }
-
-    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
-    fetchSheetData();
-  </script>
-</body>
-</html>
+      const
