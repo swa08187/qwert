@@ -9,7 +9,7 @@
       --main-color: #c0d9ec;
       --bg: #f9fbfd;
       --text: #222;
-      --card-bg: #ffffff;
+      --card-bg: #fff;
       --btn-bg: var(--main-color);
       --btn-text: #fff;
       --btn-hover-bg: #9ac2e3;
@@ -26,44 +26,29 @@
       --border-color: #333;
       --shadow-color: rgba(0, 0, 0, 0.6);
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       font-family: 'Noto Sans KR', Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 20px 16px;
+      padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
-
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-
     header h1 {
-      font-weight: 700;
-      font-size: 1.8rem;
       color: var(--main-color);
       margin: 0;
     }
-
     .dark-toggle {
-      font-size: 24px;
       cursor: pointer;
+      font-size: 24px;
       user-select: none;
-      transition: color 0.3s;
     }
-    .dark-toggle:hover {
-      color: var(--btn-hover-bg);
-    }
-
     #inputsearch {
       width: 100%;
       padding: 14px 16px;
@@ -73,7 +58,6 @@
       background-color: var(--card-bg);
       color: var(--text);
       box-shadow: 0 2px 6px var(--shadow-color);
-      transition: border-color 0.3s, box-shadow 0.3s;
       margin-bottom: 24px;
     }
     #inputsearch:focus {
@@ -81,7 +65,6 @@
       border-color: var(--main-color);
       box-shadow: 0 4px 10px var(--main-color);
     }
-
     .filter-group {
       margin-bottom: 24px;
     }
@@ -90,7 +73,6 @@
       overflow-x: auto;
       white-space: nowrap;
     }
-
     button {
       background-color: var(--btn-bg);
       color: var(--btn-text);
@@ -102,55 +84,41 @@
       cursor: pointer;
       margin: 4px 6px 4px 0;
       box-shadow: 0 3px 8px var(--shadow-color);
-      transition: background-color 0.3s, transform 0.15s;
       user-select: none;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: var(--btn-hover-bg);
-      transform: translateY(-2px);
     }
-    button:active {
-      transform: translateY(0);
-    }
-
     .button-selected {
       background-color: #557dbf;
-      box-shadow: 0 4px 14px #557dbfaa;
       font-weight: 700;
-      color: #fff;
     }
-
     #musicList, #random {
       display: flex;
       flex-wrap: wrap;
       gap: 18px;
       justify-content: center;
     }
-
     .song-div, .random-song {
-      width: 100%;
-      max-width: 280px;
+      width: 280px;
       background-color: var(--card-bg);
-      color: var(--text);
       border-radius: 16px;
       padding: 14px;
       box-shadow: 0 6px 14px var(--shadow-color);
       text-align: center;
       cursor: pointer;
-      transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+      user-select: none;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 8px;
-      user-select: none;
+      transition: background-color 0.3s;
     }
     .song-div:hover, .random-song:hover {
       background-color: var(--main-color);
       color: white;
-      box-shadow: 0 12px 26px var(--main-color);
-      transform: translateY(-6px);
     }
-
     .song-cover {
       width: 100%;
       height: 160px;
@@ -159,29 +127,12 @@
       box-shadow: 0 4px 10px var(--shadow-color);
       user-select: none;
     }
-
-    .song-div > div, .random-song > div {
-      font-weight: 600;
-      font-size: 1rem;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      width: 100%;
-      user-select: text;
-    }
-
     .pagination {
       display: flex;
       justify-content: center;
       margin-top: 24px;
       flex-wrap: wrap;
       gap: 6px;
-    }
-
-    @media (min-width: 600px) {
-      .song-div, .random-song {
-        flex: 0 0 30%;
-      }
     }
   </style>
 </head>
@@ -206,7 +157,7 @@
   </div>
 
   <h2 style="margin-top:40px; display:flex; align-items:center; gap:10px;">
-    랜덤 추천 
+    랜덤 추천
     <button onclick="renderRandom()" title="새로고침">🔄</button>
   </h2>
   <div id="random"></div>
@@ -215,139 +166,173 @@
   <div id="musicList"></div>
   <div class="pagination" id="pagination"></div>
 
-  <script>
-    const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
-    const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    let musicData = [];
-    let currentGenre = "";
-    let currentCategory = "";
-    let sortBy = "order";
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 15;
+<script>
+  const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
+  const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
 
-    const genreContainer = document.getElementById("genre");
-    const categoryContainer = document.getElementById("category");
-    const randomContainer = document.getElementById("random");
-    const musicListContainer = document.getElementById("musicList");
-    const paginationContainer = document.getElementById("pagination");
-    const searchInput = document.getElementById("inputsearch");
+  let musicData = [];
+  let currentGenre = "";
+  let currentCategory = "";
+  let sortBy = "order";
+  let currentPage = 1;
+  const ITEMS_PER_PAGE = 15;
 
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-    }
+  const genreContainer = document.getElementById("genre");
+  const categoryContainer = document.getElementById("category");
+  const randomContainer = document.getElementById("random");
+  const musicListContainer = document.getElementById("musicList");
+  const paginationContainer = document.getElementById("pagination");
+  const searchInput = document.getElementById("inputsearch");
 
-    async function fetchSheetData() {
-      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
-      let combined = [];
-      for (const range of ranges) {
-        const res = await fetch(https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY});
-        const data = await res.json();
-        if (data.values) combined = combined.concat(data.values);
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  async function fetchSheetData() {
+    const range = "시트1!A2:H1000"; // 예시: 시트1에 H열까지 데이터가 있다고 가정
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.values) {
+        alert("데이터를 불러오지 못했습니다.");
+        return;
       }
-      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-      musicData = combined.map(row => Object.fromEntries(columns.map((k, i) => [k, row[i] || ""])));
+      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link", "download_link"];
+      musicData = data.values.map(row => Object.fromEntries(columns.map((k, i) => [k, row[i] || ""])));
       initFilters();
       renderList();
       renderRandom();
       setSort(sortBy);
+    } catch (e) {
+      alert("데이터를 불러오는 중 오류가 발생했습니다.");
+      console.error(e);
     }
+  }
 
-    function initFilters() {
-      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(Boolean))];
-      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(Boolean))];
-      buildFilterButtons(genreContainer, genres, "genre");
-      buildFilterButtons(categoryContainer, categories, "category");
+  function initFilters() {
+    const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(Boolean))];
+    const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(Boolean))];
+    buildFilterButtons(genreContainer, genres, "genre");
+    buildFilterButtons(categoryContainer, categories, "category");
+  }
+
+  function buildFilterButtons(container, values, type) {
+    container.innerHTML = "";
+    values.forEach(val => {
+      const btn = document.createElement("button");
+      btn.textContent = val;
+      if (val === "전체") btn.classList.add("button-selected");
+      btn.onclick = () => {
+        container.querySelectorAll("button").forEach(b => b.classList.remove("button-selected"));
+        btn.classList.add("button-selected");
+        if (type === "genre") currentGenre = val === "전체" ? "" : val;
+        if (type === "category") currentCategory = val === "전체" ? "" : val;
+        currentPage = 1;
+        renderList();
+        renderRandom();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function setSort(type) {
+    sortBy = type;
+    document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
+    const selectedBtn = document.getElementById(`sort-${type}`);
+    if (selectedBtn) selectedBtn.classList.add("button-selected");
+    renderList();
+  }
+
+  function renderList() {
+    const term = searchInput.value.toLowerCase();
+    let list = musicData.filter(m =>
+      (!currentGenre || m.genre === currentGenre) &&
+      (!currentCategory || m.category === currentCategory) &&
+      (!term || m.song.toLowerCase().includes(term) || m.artist.toLowerCase().includes(term))
+    );
+
+    list.sort((a, b) =>
+      sortBy === "title" ? a.song.localeCompare(b.song) :
+      sortBy === "artist" ? a.artist.localeCompare(b.artist) :
+      Number(a.order) - Number(b.order)
+    );
+
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageList = list.slice(start, start + ITEMS_PER_PAGE);
+
+    musicListContainer.innerHTML = "";
+    pageList.forEach(song => musicListContainer.appendChild(createSongItem(song)));
+
+    renderPagination(list.length);
+  }
+
+  function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    paginationContainer.innerHTML = "";
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if (i === currentPage) btn.classList.add("button-selected");
+      btn.onclick = () => { currentPage = i; renderList(); };
+      paginationContainer.appendChild(btn);
     }
+  }
 
-    function buildFilterButtons(container, values, type) {
-      container.innerHTML = "";
-      values.forEach(val => {
-        const btn = document.createElement("button");
-        btn.textContent = val;
-        if (val === "전체") btn.classList.add("button-selected");
-        btn.onclick = () => {
-          container.querySelectorAll("button").forEach(b => b.classList.remove("button-selected"));
-          btn.classList.add("button-selected");
-          if (type === "genre") currentGenre = val === "전체" ? "" : val;
-          if (type === "category") currentCategory = val === "전체" ? "" : val;
-          currentPage = 1;
-          renderList();
-          renderRandom();
-        };
-        container.appendChild(btn);
+  function renderRandom() {
+    let pool = currentGenre ? musicData.filter(m => m.genre === currentGenre) : musicData;
+    const selected = [];
+    while (selected.length < 6 && pool.length) {
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      if (!selected.includes(pick)) selected.push(pick);
+    }
+    randomContainer.innerHTML = "";
+    selected.forEach(song => randomContainer.appendChild(createSongItem(song, true)));
+  }
+
+  function createSongItem(song, isRandom = false) {
+    const div = document.createElement("div");
+    div.className = isRandom ? "random-song" : "song-div";
+
+    const img = document.createElement("img");
+    img.src = song.cover_link || "https://media.discordapp.net/attachments/1293994351193620513/1321045899169763349/Untitled_drawing_1.png";
+    img.alt = "cover";
+    img.className = "song-cover";
+
+    const info = document.createElement("div");
+    info.textContent = `${song.song} - ${song.artist}`;
+
+    div.appendChild(img);
+    div.appendChild(info);
+
+    // 좌클릭: 링크가 있으면 이동
+    if (song.link) {
+      div.style.cursor = "pointer";
+      div.addEventListener("click", () => {
+        window.open(song.link, "_blank");
       });
     }
 
-    function setSort(type) {
-      sortBy = type;
-      document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
-      const selectedBtn = document.getElementById(sort-${type});
-      if (selectedBtn) selectedBtn.classList.add("button-selected");
-      renderList();
-    }
-
-    function renderList() {
-      const term = searchInput.value.toLowerCase();
-      let list = musicData.filter(m =>
-        (!currentGenre || m.genre === currentGenre) &&
-        (!currentCategory || m.category === currentCategory) &&
-        (!term || m.song.toLowerCase().includes(term) || m.artist.toLowerCase().includes(term))
-      );
-
-      list.sort((a, b) => sortBy === "title" ? a.song.localeCompare(b.song)
-                          : sortBy === "artist" ? a.artist.localeCompare(b.artist)
-                          : Number(a.order) - Number(b.order));
-
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const pageList = list.slice(start, start + ITEMS_PER_PAGE);
-
-      musicListContainer.innerHTML = "";
-      pageList.forEach(song => musicListContainer.appendChild(createSongItem(song)));
-
-      renderPagination(list.length);
-    }
-
-    function renderPagination(totalItems) {
-      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-      paginationContainer.innerHTML = "";
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        if (i === currentPage) btn.classList.add("button-selected");
-        btn.onclick = () => { currentPage = i; renderList(); };
-        paginationContainer.appendChild(btn);
+    // 우클릭: 다운로드 링크(H열)가 있으면 이동
+    div.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      if (song.download_link) {
+        window.open(song.download_link, "_blank");
+      } else {
+        alert("다운로드 링크가 없습니다.");
       }
-    }
+    });
 
-    function renderRandom() {
-      let pool = currentGenre ? musicData.filter(m => m.genre === currentGenre) : musicData;
-      const selected = [];
-      while (selected.length < 6 && pool.length) {
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        if (!selected.includes(pick)) selected.push(pick);
-      }
-      randomContainer.innerHTML = "";
-      selected.forEach(song => randomContainer.appendChild(createSongItem(song, true)));
-    }
+    return div;
+  }
 
-    function createSongItem(song, isRandom = false) {
-      const div = document.createElement("div");
-      div.className = isRandom ? "random-song" : "song-div";
-      const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/200x200?text=No+Image";
-      img.alt = "cover";
-      img.className = "song-cover";
-      const info = document.createElement("div");
-      info.textContent = ${song.song} - ${song.artist};
-      div.appendChild(img);
-      div.appendChild(info);
-      if (song.link) div.onclick = () => window.open(song.link, "_blank");
-      return div;
-    }
+  searchInput.addEventListener("input", () => {
+    currentPage = 1;
+    renderList();
+  });
 
-    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
-
-    fetchSheetData();
-  </script>
+  fetchSheetData();
+</script>
 </body>
 </html>
+
