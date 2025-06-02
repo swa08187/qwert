@@ -168,7 +168,6 @@
     }
 
     async function fetchSheetData() {
-      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000"];
       const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
       let combined = [];
       for (const range of ranges) {
@@ -279,5 +278,5 @@
     searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
     fetchSheetData();
   </script>
-</body>
+</body>More actions
 </html>
