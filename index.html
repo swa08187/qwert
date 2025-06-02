@@ -1,302 +1,78 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>노래책</title>
-  <style>
-    :root {
-      --bg: white;
-      --text: black;
-      --card-bg: white;
-    }
-    body.dark {
-      --bg: #121212;
-      --text: #f0f0f0;
-      --card-bg: #1e1e1e;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>싱크룸용 노래책</title>
+<style>
+  :root {
+    --main-color: #c0d9ec;
+    --bg-color: #f9fbfd;
+    --text-color: #333;
+    --card-bg: #fff;
+    --border-color: #e0e6eb;
+    --shadow-color: rgba(0,0,0,0.05);
+    --btn-bg: transparent;
+    --btn-hover-bg: #d7e6f7;
+    --btn-text-color: #444;
+  }
+  body.dark {
+    --bg-color: #121212;
+    --text-color: #ddd;
+    --card-bg: #1c1c1c;
+    --border-color: #333;
+    --shadow-color: rgba(0,0,0,0.8);
+    --btn-hover-bg: #2a2a2a;
+    --btn-text-color: #ccc;
+  }
 
-    body {
-      font-family: Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 16px;
-      margin: 0;
-    }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 24px 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 36px;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.9rem;
+    color: var(--main-color);
+  }
+  .dark-toggle {
+    cursor: pointer;
+    font-size: 24px;
+    user-select: none;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+  }
+  .dark-toggle:hover {
+    color: var(--main-color);
+  }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .dark-toggle {
-      font-size: 20px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    input#inputsearch {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: var(--card-bg);
-      color: var(--text);
-    }
-
-    button {
-      margin: 4px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background-color: #eee;
-      color: var(--text);
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #ddd;
-    }
-    .button-selected {
-      background-color: #88f;
-      color: white;
-    }
-
-    #musicList, #random {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-    }
-
-    .song-div, .random-song {
-      width: 100%;
-      max-width: 300px;
-      background-color: var(--card-bg);
-      color: var(--text);
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 8px;
-      text-align: center;
-      transition: background-color 0.3s;
-      cursor: pointer;
-    }
-    .song-div:hover, .random-song:hover {
-      background-color: #eef;
-    }
-
-    .song-cover {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    .filter-group {
-      margin-bottom: 12px;
-    }
-    .filter-group > div {
-      margin-bottom: 6px;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .filter-group button {
-      white-space: nowrap;
-    }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .pagination button {
-      margin: 2px;
-    }
-
-    @media (min-width: 600px) {
-      .song-div, .random-song {
-        flex: 0 0 30%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>싱크룸용 노래책</h1>
-    <div class="dark-toggle" title="다크모드 토글">🌙</div>
-  </header>
-
-  <input type="text" id="inputsearch" placeholder="검색" />
-
-  <div class="filter-group">
-    <div id="genre"></div>
-    <div id="category"></div>
-  </div>
-
-  <div>
-    <strong>정렬:</strong>
-    <button id="sort-title">곡명순</button>
-    <button id="sort-artist">가수명순</button>
-    <button id="sort-order" class="button-selected">등록순</button>
-  </div>
-
-  <h2>랜덤 추천 <button id="random-refresh">🔄</button></h2>
-  <div id="random"></div>
-
-  <h2>노래 목록</h2>
-  <div id="musicList"></div>
-  <div class="pagination" id="pagination"></div>
-
-  <script>
-    const SHEET_ID = "1i-sXORfTZXdWSDDFHvdBRd8ZyCDS7f8065af3Ou7Btg";
-    const API_KEY = "AIzaSyA13XaHj7QD6HDYVa0zgtTBE0ewihrhf8M";
-    let musicData = [];
-    let currentGenre = "";
-    let currentCategory = "";
-    let sortBy = "order";
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 15;
-
-    const genreContainer = document.getElementById("genre");
-    const categoryContainer = document.getElementById("category");
-    const randomContainer = document.getElementById("random");
-    const musicListContainer = document.getElementById("musicList");
-    const paginationContainer = document.getElementById("pagination");
-    const searchInput = document.getElementById("inputsearch");
-
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-    }
-
-    async function fetchSheetData() {
-      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
-      let combined = [];
-      for (const range of ranges) {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`);
-        const data = await res.json();
-        if (data.values) combined = combined.concat(data.values);
-      }
-      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
-      musicData = combined.map(row => Object.fromEntries(columns.map((k, i) => [k, row[i] || ""])));
-      initFilters();
-      renderList();
-      renderRandom();
-    }
-
-    function initFilters() {
-      const genres = ["전체", ...new Set(musicData.map(m => m.genre).filter(Boolean))];
-      const categories = ["전체", ...new Set(musicData.map(m => m.category).filter(Boolean))];
-      buildFilterButtons(genreContainer, genres, "genre");
-      buildFilterButtons(categoryContainer, categories, "category");
-    }
-
-    function buildFilterButtons(container, values, type) {
-      container.innerHTML = "";
-      values.forEach(val => {
-        const btn = document.createElement("button");
-        btn.textContent = val;
-        if (val === "전체") btn.classList.add("button-selected");
-        btn.addEventListener("click", () => {
-          container.querySelectorAll("button").forEach(b => b.classList.remove("button-selected"));
-          btn.classList.add("button-selected");
-          if (type === "genre") currentGenre = val === "전체" ? "" : val;
-          if (type === "category") currentCategory = val === "전체" ? "" : val;
-          currentPage = 1;
-          renderList();
-          renderRandom();
-        });
-        container.appendChild(btn);
-      });
-    }
-
-    function setSort(type) {
-      sortBy = type;
-      document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
-      const selectedBtn = document.getElementById(`sort-${type}`);
-      if (selectedBtn) selectedBtn.classList.add("button-selected");
-      currentPage = 1;
-      renderList();
-    }
-
-    function renderList() {
-      const term = searchInput.value.toLowerCase();
-      let list = musicData.filter(m =>
-        (!currentGenre || m.genre === currentGenre) &&
-        (!currentCategory || m.category === currentCategory) &&
-        (!term || m.song.toLowerCase().includes(term) || m.artist.toLowerCase().includes(term))
-      );
-
-      list.sort((a, b) => sortBy === "title" ? a.song.localeCompare(b.song)
-                          : sortBy === "artist" ? a.artist.localeCompare(b.artist)
-                          : Number(a.order) - Number(b.order));
-
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const pageList = list.slice(start, start + ITEMS_PER_PAGE);
-
-      musicListContainer.innerHTML = "";
-      pageList.forEach(song => musicListContainer.appendChild(createSongItem(song)));
-
-      renderPagination(list.length);
-    }
-
-    function renderPagination(totalItems) {
-      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-      paginationContainer.innerHTML = "";
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        if (i === currentPage) btn.classList.add("button-selected");
-        btn.addEventListener("click", () => { currentPage = i; renderList(); });
-        paginationContainer.appendChild(btn);
-      }
-    }
-
-    function renderRandom() {
-      let pool = currentGenre ? musicData.filter(m => m.genre === currentGenre) : musicData;
-      const selected = [];
-      while (selected.length < 6 && pool.length) {
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        if (!selected.includes(pick)) selected.push(pick);
-      }
-      randomContainer.innerHTML = "";
-      selected.forEach(song => randomContainer.appendChild(createSongItem(song, true)));
-    }
-
-    function createSongItem(song, isRandom = false) {
-      const div = document.createElement("div");
-      div.className = isRandom ? "random-song" : "song-div";
-      const img = document.createElement("img");
-      img.src = song.cover_link || "https://placehold.co/200x200?text=No+Image";
-      img.alt = "cover";
-      img.className = "song-cover";
-      const info = document.createElement("div");
-      info.textContent = `${song.song} - ${song.artist}`;
-      div.appendChild(img);
-      div.appendChild(info);
-      if (song.link) div.addEventListener("click", () => window.open(song.link, "_blank"));
-      return div;
-    }
-
-    // 이벤트 리스너 등록
-    document.querySelector(".dark-toggle").addEventListener("click", toggleDarkMode);
-    document.getElementById("sort-title").addEventListener("click", () => setSort("title"));
-    document.getElementById("sort-artist").addEventListener("click", () => setSort("artist"));
-    document.getElementById("sort-order").addEventListener("click", () => setSort("order"));
-    document.getElementById("random-refresh").addEventListener("click", renderRandom);
-    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
-
-    // 전역에 함수 등록 (필요시)
-    window.toggleDarkMode = toggleDarkMode;
-    window.setSort = setSort;
-    window.renderRandom = renderRandom;
-
-    fetchSheetData();
-  </script>
-</body>
-</html>
+  #inputsearch {
+    width: 100%;
+    max-width: 480px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 0 5px var(--shadow-color);
+    transition: border-color 0.25s ease;
+    margin-bottom: 28px;
+  }
+  #inputsearch:focus {
+    outline: none;
+    border-color: var(--main-color);
+    box-shadow: 0 0 8px var(--
