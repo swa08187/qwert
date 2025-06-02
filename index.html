@@ -189,7 +189,7 @@
   }
 
   async function fetchSheetData() {
-    const range = "시트1!A2:H1000"; // 예시: 시트1에 H열까지 데이터가 있다고 가정
+    const range = "시트1!A2:H1000, 시트2!A2:H1000, 시트3!A2:H1000"; // 예시: 시트1에 H열까지 데이터가 있다고 가정
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
     try {
       const res = await fetch(url);
