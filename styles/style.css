@@ -1,182 +1,284 @@
-/* ===========================================
-   🎵 노래책 웹사이트 - 싱크룸 스타일 테마
-   메인 컬러: #c0d9ec, 다크모드 기반 디자인
-   =========================================== */
+/* style.css */
 
-/* 1. 기본 설정 */
+/* 기본 색상 변수 */
+:root {
+  --main-color: #c0d9ec;
+  --bg-color: #111;
+  --text-color: #eee;
+  --sidebar-bg: #222;
+  --card-bg: #1e1e1e;
+  --border-color: #444;
+  --hover-bg: #2a2a2a;
+  --button-bg: var(--main-color);
+  --button-hover-bg: #9ac4e6;
+}
+
+/* 전체 기본 스타일 */
 body {
   margin: 0;
-  padding: 0;
-  background-color: #111;
-  color: #fff;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* 2. 상단 네비게이션 */
-header {
-  background-color: #1c1c1c;
-  color: #c0d9ec;
+/* 상단바 */
+.topbar {
+  background-color: var(--sidebar-bg);
+  color: var(--main-color);
+  padding: 14px 24px;
+  font-weight: 700;
+  font-size: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  user-select: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
-header .logo {
-  font-size: 1.4rem;
-  font-weight: bold;
-}
-
-header input.search {
-  background: #222;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  color: #fff;
-  width: 250px;
-}
-
-header .dark-toggle {
-  background: none;
-  border: none;
-  color: #c0d9ec;
-  font-size: 1.2rem;
+.dark-toggle {
+  font-size: 1.6rem;
   cursor: pointer;
+  user-select: none;
+  transition: color 0.3s;
 }
 
-/* 3. 메인 영역 레이아웃 */
-.main {
+.dark-toggle:hover {
+  color: var(--button-hover-bg);
+}
+
+/* 전체 컨테이너 (사이드 + 메인) */
+.container {
+  flex: 1;
   display: flex;
-  min-height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
-/* 4. 사이드바 */
+/* 사이드바 */
 .sidebar {
-  width: 220px;
-  background-color: #181818;
-  padding: 20px;
-  border-right: 1px solid #333;
+  background-color: var(--sidebar-bg);
+  padding: 20px 16px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
 }
 
-.sidebar h3,
-.sidebar p,
-.sidebar label {
-  color: #c0d9ec;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
+/* 검색창 */
+#inputsearch {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  outline: none;
+  transition: background-color 0.3s;
 }
 
-/* 5. 노래 목록 (그리드 카드형) */
-.song-grid {
+#inputsearch::placeholder {
+  color: #999;
+}
+
+#inputsearch:focus {
+  background-color: var(--hover-bg);
+}
+
+/* 필터 그룹 */
+.filter-group h3 {
+  margin: 8px 0 6px 0;
+  font-weight: 600;
+  color: var(--main-color);
+}
+
+.filter-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* 필터 버튼 */
+.filter-group button,
+.sort-group button {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.filter-group button.button-selected,
+.sort-group button.button-selected {
+  background-color: var(--button-bg);
+  border-color: var(--button-bg);
+  color: #111;
+  font-weight: 700;
+}
+
+.filter-group button:hover:not(.button-selected),
+.sort-group button:hover:not(.button-selected) {
+  background-color: var(--hover-bg);
+}
+
+/* 정렬 그룹 */
+.sort-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--main-color);
+  font-weight: 600;
+}
+
+/* 메인 콘텐츠 영역 */
+.main {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 30px;
+}
+
+/* 제목 스타일 */
+.main h2 {
+  margin-top: 0;
+  color: var(--main-color);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.main h2 button {
+  cursor: pointer;
+  border: none;
+  background: var(--button-bg);
+  color: #111;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition: background-color 0.3s;
+}
+
+.main h2 button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* 노래 목록과 랜덤 추천 리스트 */
+.song-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  padding: 20px;
-  flex-grow: 1;
-  background-color: #121212;
+  grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+  gap: 20px;
 }
 
-.song-card {
-  background: #1e1e1e;
+/* 노래 카드 */
+.song-div, .random-song {
+  background-color: var(--card-bg);
   border-radius: 12px;
   padding: 12px;
-  text-align: center;
-  color: #c0d9ec;
-  transition: 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
-.song-card:hover {
-  background: #272727;
-  transform: scale(1.03);
-}
-
-.song-card img {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.song-card h3 {
-  margin: 6px 0 4px;
-  font-size: 1rem;
-  color: #fff;
-}
-
-.song-card p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #aaa;
-}
-
-/* 6. 하단 재생바 */
-.player-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(30, 30, 30, 0.95);
-  color: #c0d9ec;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  border-top: 1px solid #444;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
-}
-
-.player-bar img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  margin-right: 10px;
-}
-
-.player-bar .song-info {
-  flex-grow: 1;
-  margin-left: 10px;
-}
-
-.player-bar button {
-  background: none;
-  border: none;
-  color: #c0d9ec;
-  font-size: 1.5rem;
+  color: var(--text-color);
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.3s;
+  border: 1px solid var(--border-color);
+  user-select: none;
 }
 
-/* 7. 반응형 */
-@media (max-width: 768px) {
+.song-div:hover, .random-song:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--button-bg);
+}
+
+.song-cover {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 12px;
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.4);
+}
+
+/* 곡 정보 텍스트 */
+.song-div > div, .random-song > div {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  user-select: text;
+}
+
+/* 페이지네이션 */
+.pagination {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination button {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination button.button-selected {
+  background-color: var(--button-bg);
+  border-color: var(--button-bg);
+  color: #111;
+}
+
+.pagination button:hover:not(.button-selected) {
+  background-color: var(--hover-bg);
+}
+
+/* 스크롤바 스타일 (웹킷) */
+.sidebar::-webkit-scrollbar, .filter-group > div::-webkit-scrollbar, .main::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb, .filter-group > div::-webkit-scrollbar-thumb, .main::-webkit-scrollbar-thumb {
+  background-color: var(--button-bg);
+  border-radius: 4px;
+}
+
+/* 반응형: 화면 작을 때 사이드바 좁게 */
+@media (max-width: 720px) {
+  .container {
+    flex-direction: column;
+  }
   .sidebar {
-    display: none;
-  }
-
-  .main {
-    flex-direction: column;
-  }
-
-  .song-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  header input.search {
     width: 100%;
-    margin-top: 10px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
   }
-
-  .song-grid {
-    grid-template-columns: 1fr;
+  .main {
+    padding: 16px;
   }
-
-  .player-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .player-bar .song-info {
-    margin: 10px 0;
+  .song-list {
+    grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
   }
 }
