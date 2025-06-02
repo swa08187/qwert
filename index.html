@@ -237,33 +237,15 @@
     }
 
     async function fetchSheetData() {
-      const ranges = [
-        "시트1!A2:H1000",
-        "시트2!A2:H1000",
-        "시트3!A2:H1000"
-      ];
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?${ranges.map(r => `ranges=${encodeURIComponent(r)}`).join("&")}&key=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.valueRanges) {
-        console.error("데이터를 불러오는데 실패했습니다.", data);
-        return;
-      }
-
+      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
       let combined = [];
-      data.valueRanges.forEach(sheet => {
-        if(sheet.values) combined = combined.concat(sheet.values);
-      });
-
-      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link", "download_link"];
-      musicData = combined.map(row => {
-        // 각 행이 8열까지 있지 않을 수도 있음 -> 빈값 처리
-        let obj = {};
-        columns.forEach((col, i) => obj[col] = row[i] || "");
-        return obj;
-      });
-
+      for (const range of ranges) {
+        const res = await fetch(https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY});
+        const data = await res.json();
+        if (data.values) combined = combined.concat(data.values);
+      }
+      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
+      musicData = combined.map(row => Object.fromEntries(columns.map((k, i) => [k, row[i] || ""])));
       initFilters();
       renderList();
       renderRandom();
@@ -299,3 +281,73 @@
     function setSort(type) {
       sortBy = type;
       document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
+      const selectedBtn = document.getElementById(sort-${type});
+      if (selectedBtn) selectedBtn.classList.add("button-selected");
+      renderList();
+    }
+
+    function renderList() {
+      const term = searchInput.value.toLowerCase();
+      let list = musicData.filter(m =>
+        (!currentGenre || m.genre === currentGenre) &&
+        (!currentCategory || m.category === currentCategory) &&
+        (!term || m.song.toLowerCase().includes(term) || m.artist.toLowerCase().includes(term))
+      );
+
+      list.sort((a, b) => sortBy === "title" ? a.song.localeCompare(b.song)
+                          : sortBy === "artist" ? a.artist.localeCompare(b.artist)
+                          : Number(a.order) - Number(b.order));
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageList = list.slice(start, start + ITEMS_PER_PAGE);
+
+      musicListContainer.innerHTML = "";
+      pageList.forEach(song => musicListContainer.appendChild(createSongItem(song)));
+
+      renderPagination(list.length);
+    }
+
+    function renderPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      paginationContainer.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (i === currentPage) btn.classList.add("button-selected");
+        btn.onclick = () => { currentPage = i; renderList(); };
+        paginationContainer.appendChild(btn);
+      }
+    }
+
+    function renderRandom() {
+      let pool = currentGenre ? musicData.filter(m => m.genre === currentGenre) : musicData;
+      const selected = [];
+      while (selected.length < 6 && pool.length) {
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        if (!selected.includes(pick)) selected.push(pick);
+      }
+      randomContainer.innerHTML = "";
+      selected.forEach(song => randomContainer.appendChild(createSongItem(song, true)));
+    }
+
+    function createSongItem(song, isRandom = false) {
+      const div = document.createElement("div");
+      div.className = isRandom ? "random-song" : "song-div";
+      const img = document.createElement("img");
+      img.src = song.cover_link || "https://placehold.co/200x200?text=No+Image";
+      img.alt = "cover";
+      img.className = "song-cover";
+      const info = document.createElement("div");
+      info.textContent = ${song.song} - ${song.artist};
+      div.appendChild(img);
+      div.appendChild(info);
+      if (song.link) div.onclick = () => window.open(song.link, "_blank");
+      return div;
+    }
+
+    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
+
+    fetchSheetData();
+  </script>
+</body>
+</html> 
