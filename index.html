@@ -237,14 +237,14 @@
     }
 
     async function fetchSheetData() {
-      const ranges = ["시트1!A2:H1000", "시트2!A2:H1000", "시트3!A2:H1000"];
+      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
       let combined = [];
       for (const range of ranges) {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`);
+        const res = await fetch(https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY});
         const data = await res.json();
         if (data.values) combined = combined.concat(data.values);
       }
-      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link", "download_link"];
+      const columns = ["order", "artist", "song", "genre", "category", "cover_link", "link"];
       musicData = combined.map(row => Object.fromEntries(columns.map((k, i) => [k, row[i] || ""])));
       initFilters();
       renderList();
@@ -281,7 +281,7 @@
     function setSort(type) {
       sortBy = type;
       document.querySelectorAll("button[id^='sort-']").forEach(btn => btn.classList.remove("button-selected"));
-      const selectedBtn = document.getElementById(`sort-${type}`);
+      const selectedBtn = document.getElementById(sort-${type});
       if (selectedBtn) selectedBtn.classList.add("button-selected");
       renderList();
     }
@@ -333,18 +333,21 @@
     function createSongItem(song, isRandom = false) {
       const div = document.createElement("div");
       div.className = isRandom ? "random-song" : "song-div";
-
       const img = document.createElement("img");
       img.src = song.cover_link || "https://media.discordapp.net/attachments/1293994351193620513/1321045899169763349/Untitled_drawing_1.png?ex=683ebf5e&is=683d6dde&hm=94b29ff3fc1d01674feebb934ea0a9f0e8a6b7aae59d2a9009ce69c2000426d1&=&format=webp&quality=lossless&width=371&height=357";
       img.alt = "cover";
       img.className = "song-cover";
-
       const info = document.createElement("div");
-      info.textContent = `${song.song} - ${song.artist}`;
-
+      info.textContent = ${song.song} - ${song.artist};
       div.appendChild(img);
       div.appendChild(info);
+      if (song.link) div.onclick = () => window.open(song.link, "_blank");
+      return div;
+    }
 
-      if (song.link) {
-       
+    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
 
+    fetchSheetData();
+  </script>
+</body>
+</html> 
