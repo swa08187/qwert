@@ -168,7 +168,7 @@
     }
 
     async function fetchSheetData() {
-      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000"];
+      const ranges = ["시트1!A2:G1000", "시트2!A2:G1000", "시트3!A2:G1000", "시트4!A2:G1000"];
       let combined = [];
       for (const range of ranges) {
         const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`);
